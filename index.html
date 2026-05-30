@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0079)file:///C:/Users/Lenovo%20ThinkPad%20E14/Downloads/property-listing-pwa_17.html -->
+<!-- saved from url=(0079)file:///C:/Users/Lenovo%20ThinkPad%20E14/Downloads/property-listing-pwa_19.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -333,7 +333,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Pending</div></div>
     <div class="stat-card"><div class="stat-value">2</div><div class="stat-label">Teams</div></div>
     <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Agents</div></div>
-    <div class="stat-card"><div class="stat-value">7</div><div class="stat-label">Published</div></div>
+    <div class="stat-card"><div class="stat-value">8</div><div class="stat-label">Published</div></div>
   </div>
     <div class="tabs">
       <div class="tab active" onclick="showAdminTab(&#39;users&#39;,this)">User Approvals</div>
@@ -493,6 +493,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <td><button class="btn btn-ghost btn-sm" onclick="viewListing(&#39;LqlfR4Add5o9MwCNKZ1b&#39;)">View</button></td>
         </tr>
         <tr>
+          <td style="cursor:pointer;color:var(--gold)" onclick="viewListing(&#39;pPuOG3AQWIdsINKZVmD7&#39;)">laman rimbunan</td>
+          <td style="color:var(--text-muted);font-size:12px">CK Yap</td>
+          <td><span class="badge badge-rent">rent</span></td>
+          <td style="color:var(--text-muted);font-size:12px">commercial</td>
+          <td><span class="badge badge-published">published</span></td>
+          <td><button class="btn btn-ghost btn-sm" onclick="viewListing(&#39;pPuOG3AQWIdsINKZVmD7&#39;)">View</button></td>
+        </tr>
+        <tr>
           <td style="cursor:pointer;color:var(--gold)" onclick="viewListing(&#39;tNFegpYE7h4pAZiqrdRl&#39;)">Sunway Union suite</td>
           <td style="color:var(--text-muted);font-size:12px">CK Yap</td>
           <td><span class="badge badge-rent">rent</span></td>
@@ -603,18 +611,14 @@ function listingCardHTML(l){
 
 // ===== FORMAT PRICE =====
 function formatPrice(val){
-  // Extract numbers and format with commas, keep prefix/suffix text
-  return val.replace(/(\d+(?:\.\d+)?)/g, n=>Number(n).toLocaleString('en-MY'));
+  if(!val)return '';
+  // Replace digit sequences with comma-formatted version
+  return val.replace(/\d+/g, n=>parseInt(n,10).toLocaleString('en-MY'));
 }
 
 function formatPriceInput(el){
-  // Auto-format numbers in price field
-  let val=el.value;
-  // Replace number sequences with comma-formatted version
-  el.value=val.replace(/\d[\d]*/g, n=>{
-    // Only format if > 3 digits
-    return n.length>3?Number(n).toLocaleString('en-MY'):n;
-  });
+  const val=el.value;
+  el.value=val.replace(/\d+/g, n=>parseInt(n,10).toLocaleString('en-MY'));
 }
 function openAddListing(){editingListingId=null;imgSlots=[null,null,null];renderListingForm({});openModal('listingModal')}
 function renderListingForm(l){
