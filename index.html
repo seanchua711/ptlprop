@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0079)file:///C:/Users/Lenovo%20ThinkPad%20E14/Downloads/property-listing-pwa_19.html -->
+<!-- saved from url=(0079)file:///C:/Users/Lenovo%20ThinkPad%20E14/Downloads/property-listing-pwa_21.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -332,8 +332,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div class="stat-grid" id="adminStats">
     <div class="stat-card"><div class="stat-value">0</div><div class="stat-label">Pending</div></div>
     <div class="stat-card"><div class="stat-value">2</div><div class="stat-label">Teams</div></div>
-    <div class="stat-card"><div class="stat-value">3</div><div class="stat-label">Agents</div></div>
-    <div class="stat-card"><div class="stat-value">8</div><div class="stat-label">Published</div></div>
+    <div class="stat-card"><div class="stat-value">6</div><div class="stat-label">Agents</div></div>
+    <div class="stat-card"><div class="stat-value">12</div><div class="stat-label">Published</div></div>
   </div>
     <div class="tabs">
       <div class="tab active" onclick="showAdminTab(&#39;users&#39;,this)">User Approvals</div>
@@ -342,10 +342,34 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </div>
     <div id="adminUsers">
     <div style="color:var(--green);text-align:center;padding:16px;background:rgba(61,190,142,.08);border-radius:8px;margin-bottom:20px;font-size:14px">✓ No pending approvals</div>
-    <div style="font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:10px;font-weight:600">All Members (4)</div>
+    <div style="font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:10px;font-weight:600">All Members (7)</div>
     <div class="admin-table-wrap"><table>
       <thead><tr><th>Name</th><th>Email</th><th>Team</th><th>Role</th><th>Status</th><th>Change Role</th><th>Actions</th></tr></thead>
       <tbody>
+        <tr>
+          <td>Timothy Teh</td>
+          <td style="color:var(--text-muted);font-size:12px">teh3003@gmail.com</td>
+          <td style="color:var(--text-muted);font-size:12px">Admin Team</td>
+          <td><span class="badge badge-agent">agent</span></td>
+          <td><span class="badge badge-approved">approved</span></td>
+          <td>
+            <div style="display:flex;gap:4px;align-items:center">
+              <select class="form-select" id="chrole_8XKgX8APbTabSYyl80DG7XnNTRC2" style="padding:4px 8px;font-size:12px;width:auto">
+                <option value="user">User</option>
+                <option value="agent" selected="">Agent</option>
+                <option value="team">Team</option>
+                <option value="admin">Admin</option>
+              </select>
+              <button class="btn btn-gold btn-sm" onclick="adminChangeRole(&#39;8XKgX8APbTabSYyl80DG7XnNTRC2&#39;,&#39;teh3003@gmail.com&#39;)">Save</button>
+            </div>
+          </td>
+          <td style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="adminSuspend(&#39;8XKgX8APbTabSYyl80DG7XnNTRC2&#39;)">Suspend</button>
+            
+            <button class="btn btn-ghost btn-sm" onclick="resetUserPassword(&#39;teh3003@gmail.com&#39;)">Reset PW</button>
+            <button class="btn btn-danger btn-sm" onclick="adminDeleteUser(&#39;8XKgX8APbTabSYyl80DG7XnNTRC2&#39;)">Delete</button>
+          </td>
+        </tr>
         <tr>
           <td>Sean chua</td>
           <td style="color:var(--text-muted);font-size:12px">sean_ptl@yahoo.com</td>
@@ -419,6 +443,30 @@ tr:hover td{background:rgba(255,255,255,.02)}
           </td>
         </tr>
         <tr>
+          <td>Jeff Leong</td>
+          <td style="color:var(--text-muted);font-size:12px">jeff102233@gmail.com</td>
+          <td style="color:var(--text-muted);font-size:12px">Admin Team</td>
+          <td><span class="badge badge-agent">agent</span></td>
+          <td><span class="badge badge-approved">approved</span></td>
+          <td>
+            <div style="display:flex;gap:4px;align-items:center">
+              <select class="form-select" id="chrole_oDj7dF5wOQV8Opyvl8Nc2ni2bKY2" style="padding:4px 8px;font-size:12px;width:auto">
+                <option value="user">User</option>
+                <option value="agent" selected="">Agent</option>
+                <option value="team">Team</option>
+                <option value="admin">Admin</option>
+              </select>
+              <button class="btn btn-gold btn-sm" onclick="adminChangeRole(&#39;oDj7dF5wOQV8Opyvl8Nc2ni2bKY2&#39;,&#39;jeff102233@gmail.com&#39;)">Save</button>
+            </div>
+          </td>
+          <td style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="adminSuspend(&#39;oDj7dF5wOQV8Opyvl8Nc2ni2bKY2&#39;)">Suspend</button>
+            
+            <button class="btn btn-ghost btn-sm" onclick="resetUserPassword(&#39;jeff102233@gmail.com&#39;)">Reset PW</button>
+            <button class="btn btn-danger btn-sm" onclick="adminDeleteUser(&#39;oDj7dF5wOQV8Opyvl8Nc2ni2bKY2&#39;)">Delete</button>
+          </td>
+        </tr>
+        <tr>
           <td>ptl chua</td>
           <td style="color:var(--text-muted);font-size:12px">ptl@yahoo.com</td>
           <td style="color:var(--text-muted);font-size:12px">ptl chua's Team</td>
@@ -440,6 +488,30 @@ tr:hover td{background:rgba(255,255,255,.02)}
             
             <button class="btn btn-ghost btn-sm" onclick="resetUserPassword(&#39;ptl@yahoo.com&#39;)">Reset PW</button>
             <button class="btn btn-danger btn-sm" onclick="adminDeleteUser(&#39;pJty4uiwjwdWDoTrJ8hu6fnCOT73&#39;)">Delete</button>
+          </td>
+        </tr>
+        <tr>
+          <td>Andy Yu</td>
+          <td style="color:var(--text-muted);font-size:12px">andyyu6888@gmail.com</td>
+          <td style="color:var(--text-muted);font-size:12px">Admin Team</td>
+          <td><span class="badge badge-agent">agent</span></td>
+          <td><span class="badge badge-approved">approved</span></td>
+          <td>
+            <div style="display:flex;gap:4px;align-items:center">
+              <select class="form-select" id="chrole_w9FvUOeoClbc3L4J3B1omDNOZGr1" style="padding:4px 8px;font-size:12px;width:auto">
+                <option value="user">User</option>
+                <option value="agent" selected="">Agent</option>
+                <option value="team">Team</option>
+                <option value="admin">Admin</option>
+              </select>
+              <button class="btn btn-gold btn-sm" onclick="adminChangeRole(&#39;w9FvUOeoClbc3L4J3B1omDNOZGr1&#39;,&#39;andyyu6888@gmail.com&#39;)">Save</button>
+            </div>
+          </td>
+          <td style="display:flex;gap:4px;flex-wrap:wrap">
+            <button class="btn btn-ghost btn-sm" onclick="adminSuspend(&#39;w9FvUOeoClbc3L4J3B1omDNOZGr1&#39;)">Suspend</button>
+            
+            <button class="btn btn-ghost btn-sm" onclick="resetUserPassword(&#39;andyyu6888@gmail.com&#39;)">Reset PW</button>
+            <button class="btn btn-danger btn-sm" onclick="adminDeleteUser(&#39;w9FvUOeoClbc3L4J3B1omDNOZGr1&#39;)">Delete</button>
           </td>
         </tr>
       </tbody>
@@ -469,12 +541,28 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <thead><tr><th>Title</th><th>Agent</th><th>Type</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>
         <tr>
+          <td style="cursor:pointer;color:var(--gold)" onclick="viewListing(&#39;4kOclVHd0cTTnfIfRV0A&#39;)">Maluri factory</td>
+          <td style="color:var(--text-muted);font-size:12px">Timothy Teh</td>
+          <td><span class="badge badge-rent">rent</span></td>
+          <td style="color:var(--text-muted);font-size:12px">industrial</td>
+          <td><span class="badge badge-published">published</span></td>
+          <td><button class="btn btn-ghost btn-sm" onclick="viewListing(&#39;4kOclVHd0cTTnfIfRV0A&#39;)">View</button></td>
+        </tr>
+        <tr>
           <td style="cursor:pointer;color:var(--gold)" onclick="viewListing(&#39;EJ56jqHvrreBJ96X24SO&#39;)">SD 5 link factory</td>
           <td style="color:var(--text-muted);font-size:12px">CK Yap</td>
           <td><span class="badge badge-rent">rent</span></td>
           <td style="color:var(--text-muted);font-size:12px">industrial</td>
           <td><span class="badge badge-published">published</span></td>
           <td><button class="btn btn-ghost btn-sm" onclick="viewListing(&#39;EJ56jqHvrreBJ96X24SO&#39;)">View</button></td>
+        </tr>
+        <tr>
+          <td style="cursor:pointer;color:var(--gold)" onclick="viewListing(&#39;EmUXl3DRHLkEEeVG6e0O&#39;)">Ava retail</td>
+          <td style="color:var(--text-muted);font-size:12px">Jeff Leong</td>
+          <td><span class="badge badge-rent">rent</span></td>
+          <td style="color:var(--text-muted);font-size:12px">commercial</td>
+          <td><span class="badge badge-published">published</span></td>
+          <td><button class="btn btn-ghost btn-sm" onclick="viewListing(&#39;EmUXl3DRHLkEEeVG6e0O&#39;)">View</button></td>
         </tr>
         <tr>
           <td style="cursor:pointer;color:var(--gold)" onclick="viewListing(&#39;HWIN9fc1sP1xiIVqKKJs&#39;)">wangsa permai 2 storey</td>
@@ -491,6 +579,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <td style="color:var(--text-muted);font-size:12px">residential</td>
           <td><span class="badge badge-published">published</span></td>
           <td><button class="btn btn-ghost btn-sm" onclick="viewListing(&#39;LqlfR4Add5o9MwCNKZ1b&#39;)">View</button></td>
+        </tr>
+        <tr>
+          <td style="cursor:pointer;color:var(--gold)" onclick="viewListing(&#39;cGWnITFV2rcXzeXgsx8s&#39;)">Jalan kepong main road</td>
+          <td style="color:var(--text-muted);font-size:12px">CK Yap</td>
+          <td><span class="badge badge-rent">rent</span></td>
+          <td style="color:var(--text-muted);font-size:12px">commercial</td>
+          <td><span class="badge badge-published">published</span></td>
+          <td><button class="btn btn-ghost btn-sm" onclick="viewListing(&#39;cGWnITFV2rcXzeXgsx8s&#39;)">View</button></td>
         </tr>
         <tr>
           <td style="cursor:pointer;color:var(--gold)" onclick="viewListing(&#39;pPuOG3AQWIdsINKZVmD7&#39;)">laman rimbunan</td>
@@ -515,6 +611,14 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <td style="color:var(--text-muted);font-size:12px">residential</td>
           <td><span class="badge badge-published">published</span></td>
           <td><button class="btn btn-ghost btn-sm" onclick="viewListing(&#39;uyF7ARH0BuEFjNIAwARY&#39;)">View</button></td>
+        </tr>
+        <tr>
+          <td style="cursor:pointer;color:var(--gold)" onclick="viewListing(&#39;w5Ign4DYWVCaeTE7agO0&#39;)">Fortune Square 2 shop office 3 storey endlot</td>
+          <td style="color:var(--text-muted);font-size:12px">CK Yap</td>
+          <td><span class="badge badge-sale">sale</span></td>
+          <td style="color:var(--text-muted);font-size:12px">commercial</td>
+          <td><span class="badge badge-published">published</span></td>
+          <td><button class="btn btn-ghost btn-sm" onclick="viewListing(&#39;w5Ign4DYWVCaeTE7agO0&#39;)">View</button></td>
         </tr>
         <tr>
           <td style="cursor:pointer;color:var(--gold)" onclick="viewListing(&#39;xcsggS4XM2HQFJelBBMW&#39;)">sunway damansara</td>
@@ -612,13 +716,15 @@ function listingCardHTML(l){
 // ===== FORMAT PRICE =====
 function formatPrice(val){
   if(!val)return '';
-  // Replace digit sequences with comma-formatted version
-  return val.replace(/\d+/g, n=>parseInt(n,10).toLocaleString('en-MY'));
+  return val.replace(/\d+/g, n=>{
+    return n.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  });
 }
 
 function formatPriceInput(el){
-  const val=el.value;
-  el.value=val.replace(/\d+/g, n=>parseInt(n,10).toLocaleString('en-MY'));
+  el.value=el.value.replace(/\d+/g, n=>{
+    return n.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  });
 }
 function openAddListing(){editingListingId=null;imgSlots=[null,null,null];renderListingForm({});openModal('listingModal')}
 function renderListingForm(l){
