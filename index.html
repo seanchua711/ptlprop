@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0079)file:///C:/Users/Lenovo%20ThinkPad%20E14/Downloads/property-listing-pwa_21.html -->
+<!-- saved from url=(0079)file:///C:/Users/Lenovo%20ThinkPad%20E14/Downloads/property-listing-pwa_26.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -716,15 +716,20 @@ function listingCardHTML(l){
 // ===== FORMAT PRICE =====
 function formatPrice(val){
   if(!val)return '';
-  return val.replace(/\d+/g, n=>{
-    return n.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  // Remove existing commas first, then reformat
+  return val.replace(/[\d,]+/g, function(match){
+    var num = match.replace(/,/g,''); // strip existing commas
+    var result = '';
+    while(num.length > 3){
+      result = ',' + num.slice(-3) + result;
+      num = num.slice(0, -3);
+    }
+    return num + result;
   });
 }
 
 function formatPriceInput(el){
-  el.value=el.value.replace(/\d+/g, n=>{
-    return n.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  });
+  el.value = formatPrice(el.value);
 }
 function openAddListing(){editingListingId=null;imgSlots=[null,null,null];renderListingForm({});openModal('listingModal')}
 function renderListingForm(l){
