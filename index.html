@@ -386,6 +386,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <option value="en">English</option>
           <option value="ms">Bahasa Melayu</option>
         </select>
+        <button class="btn btn-sm" style="background:rgba(37,211,102,.15);color:#25d366;border:1px solid rgba(37,211,102,.3)" onclick="openWaModal()">📱 WhatsApp</button>
         <button class="btn btn-ghost btn-sm" onclick="clearAiChat()">🗑 清空</button>
         <button class="btn btn-ghost btn-sm" id="aiInstrBtn" style="display:none" onclick="openAiInstructions()">⚙️ Instructions</button>
       </div>
@@ -407,6 +408,19 @@ tr:hover td{background:rgba(255,255,255,.02)}
     <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('aiInstrModal').style.display='none'">取消</button>
       <button class="btn btn-sm" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:600" onclick="saveAiInstructions()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- WHATSAPP MODAL -->
+<div id="waModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;width:100%;max-width:420px;text-align:center">
+    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px">📱 WhatsApp 自动回复</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:16px">连接你自己的 WhatsApp 号 —— 客户发消息来，AI 用二手房源自动回复</div>
+    <div id="waBody" style="min-height:120px;display:flex;align-items:center;justify-content:center;flex-direction:column"></div>
+    <div style="display:flex;justify-content:center;gap:8px;margin-top:18px">
+      <button class="btn btn-ghost btn-sm" onclick="closeWaModal()">关闭</button>
+      <button class="btn btn-sm" id="waActionBtn" style="background:#25d366;color:#fff;font-weight:600" onclick="waAction()">连接</button>
     </div>
   </div>
 </div>
@@ -818,6 +832,25 @@ window.saveAiInstructions=async function(){
   const r=await fetch(AI_API+'/instructions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({instructions:val})}).then(r=>r.json()).catch(()=>({}));
   document.getElementById('aiInstrModal').style.display='none';
   if(r.success)alert('✅ Instructions saved');
+};
+// ===== WHATSAPP（每个 agent 连自己的号）=====
+let waPoll=null,waState={status:'disconnected'};
+async function waFetch(p,method){const tok=await aiIdToken();return fetch(AI_API+p,{method:method||'GET',headers:{'Authorization':'Bearer '+tok}}).then(r=>r.json());}
+window.openWaModal=function(){document.getElementById('waModal').style.display='flex';pollWa();waPoll=setInterval(pollWa,2500);};
+window.closeWaModal=function(){document.getElementById('waModal').style.display='none';if(waPoll){clearInterval(waPoll);waPoll=null;}};
+async function pollWa(){try{waState=await waFetch('/wa/status');renderWaBody();}catch(e){}}
+function renderWaBody(){
+  const body=document.getElementById('waBody'),btn=document.getElementById('waActionBtn');if(!body)return;
+  const s=waState.status;
+  if(s==='connected'){body.innerHTML='<div style="color:#25d366;font-size:16px;font-weight:700">✅ 已连接</div><div style="color:var(--text-muted);font-size:12px;margin-top:10px;line-height:1.6">客户发来的消息 AI 会用二手房源自动回复。<br>在手机上对某个客户发 <b>^@^</b> 关掉该客户的 AI，发 <b>^-^</b> 重开。</div>';btn.textContent='断开';btn.style.background='#ef4444';}
+  else if(s==='qr'&&waState.qr){body.innerHTML='<img src="'+waState.qr+'" style="width:230px;height:230px;border-radius:8px"/><div style="color:var(--text-muted);font-size:12px;margin-top:10px">打开 WhatsApp → 设置 → 已连接的设备 → 连接设备，扫这个码</div>';btn.textContent='取消';btn.style.background='#64748b';}
+  else if(s==='connecting'){body.innerHTML='<div style="color:var(--text-muted)">⏳ 连接中，请稍候…</div>';btn.textContent='取消';btn.style.background='#64748b';}
+  else{body.innerHTML='<div style="color:var(--text-muted);font-size:13px">还没连接。点下面「连接」生成二维码。</div>';btn.textContent='连接';btn.style.background='#25d366';}
+}
+window.waAction=async function(){
+  const s=waState.status;
+  if(s==='connected'||s==='qr'||s==='connecting'){await waFetch('/wa/disconnect','POST');waState={status:'disconnected'};renderWaBody();}
+  else{waState={status:'connecting'};renderWaBody();await waFetch('/wa/connect','POST');}
 };
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='aiInput'){e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,120)+'px';}});
 
