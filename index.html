@@ -379,7 +379,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div style="font-size:18px;font-weight:700;color:var(--text)">🤖 AI Assistant</div>
         <div style="font-size:12px;color:var(--text-muted)" id="aiSub">用平台真实房源帮你配房、比价、写文案</div>
       </div>
-      <div style="display:flex;gap:8px">
+      <div style="display:flex;gap:8px;align-items:center">
+        <select id="aiLang" onchange="aiLang=this.value" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:13px;cursor:pointer">
+          <option value="auto">🌐 Auto</option>
+          <option value="zh">中文</option>
+          <option value="en">English</option>
+          <option value="ms">Bahasa Melayu</option>
+        </select>
         <button class="btn btn-ghost btn-sm" onclick="clearAiChat()">🗑 清空</button>
         <button class="btn btn-ghost btn-sm" id="aiInstrBtn" style="display:none" onclick="openAiInstructions()">⚙️ Instructions</button>
       </div>
@@ -767,6 +773,7 @@ function renderNav(){
 // ===== AI ASSISTANT =====
 const AI_API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://127.0.0.1:3300':'https://api.neo-ai.store/ptlprop';
 let aiHistory=[];
+let aiLang='auto';
 async function aiIdToken(){try{return auth.currentUser?await auth.currentUser.getIdToken():null;}catch(e){return null;}}
 function aiAppend(role,text,cls){
   const box=document.getElementById('aiChatBox');if(!box)return;
@@ -793,7 +800,7 @@ window.sendAiMessage=async function(){
   const tok=await aiIdToken();
   if(!tok){document.getElementById('aiPending')?.remove();aiAppend('ai','⚠️ 登录已过期，请重新登录');return;}
   try{
-    const r=await fetch(AI_API+'/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({messages:aiHistory})}).then(r=>r.json());
+    const r=await fetch(AI_API+'/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({messages:aiHistory,language:aiLang})}).then(r=>r.json());
     document.getElementById('aiPending')?.remove();
     if(r.reply){aiAppend('ai',r.reply);aiHistory.push({role:'assistant',content:r.reply});}
     else aiAppend('ai','⚠️ '+(r.error||'出错了，请稍后再试'));
