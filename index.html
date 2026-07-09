@@ -371,6 +371,40 @@ tr:hover td{background:rgba(255,255,255,.02)}
   </div>
 </div>
 
+<!-- AI ASSISTANT -->
+<div class="page" id="page-aiassist" style="padding-top:72px">
+  <div style="max-width:840px;margin:0 auto;padding:16px 18px;height:calc(100vh - 72px);display:flex;flex-direction:column">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0">
+      <div>
+        <div style="font-size:18px;font-weight:700;color:var(--text)">🤖 AI Assistant</div>
+        <div style="font-size:12px;color:var(--text-muted)" id="aiSub">用平台真实房源帮你配房、比价、写文案</div>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-ghost btn-sm" onclick="clearAiChat()">🗑 清空</button>
+        <button class="btn btn-ghost btn-sm" id="aiInstrBtn" style="display:none" onclick="openAiInstructions()">⚙️ Instructions</button>
+      </div>
+    </div>
+    <div id="aiChatBox" style="flex:1;overflow-y:auto;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px"></div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-shrink:0">
+      <textarea id="aiInput" rows="1" placeholder="例如：帮我找 Kepong 预算 50 万以下的工厂 / 帮这个房源写段介绍…" style="flex:1;resize:none;max-height:120px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-size:14px;font-family:inherit" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendAiMessage()}"></textarea>
+      <button class="btn" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:600;padding:0 20px" onclick="sendAiMessage()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- AI INSTRUCTIONS MODAL -->
+<div id="aiInstrModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:22px;width:100%;max-width:520px">
+    <div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px">⚙️ AI Additional Instructions</div>
+    <div style="font-size:12px;color:var(--text-muted);margin-bottom:12px">给 AI 的额外指示（全公司通用）—— 例如话术风格、优先推的区域、回复要引导约看等。</div>
+    <textarea id="aiInstrText" rows="6" style="width:100%;resize:vertical;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;padding:12px;font-size:14px;font-family:inherit"></textarea>
+    <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:14px">
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('aiInstrModal').style.display='none'">取消</button>
+      <button class="btn btn-sm" style="background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;font-weight:600" onclick="saveAiInstructions()">💾 保存</button>
+    </div>
+  </div>
+</div>
+
 <!-- ADMIN PANEL -->
 <div class="page active" id="page-admin">
   <div class="dashboard-wrap">
@@ -723,11 +757,62 @@ function renderNav(){
   btns+=`<button class="btn btn-ghost btn-sm" onclick="showPage('page-browse');renderBrowse()">Browse</button>`;
   btns+=`<button class="btn btn-ghost btn-sm" onclick="showPage('page-wanted');renderWanted()">Wanted</button>`;
   if(role==='admin'||role==='team'||role==='agent'){
+    btns+=`<button class="btn btn-sm" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.3)" onclick="showPage('page-aiassist');renderAiAssist()">🤖 AI Assistant</button>`;
     btns+=`<button class="btn btn-sm" style="background:rgba(37,211,102,.15);color:#25d366;border:1px solid rgba(37,211,102,.3)" onclick="showPage('page-wacrm')">💬 WA CRM</button>`;
   }
   btns+=`<button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button>`;
   right.innerHTML=btns;
 }
+
+// ===== AI ASSISTANT =====
+const AI_API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://127.0.0.1:3300':'https://api.neo-ai.store/ptlprop';
+let aiHistory=[];
+async function aiIdToken(){try{return auth.currentUser?await auth.currentUser.getIdToken():null;}catch(e){return null;}}
+function aiAppend(role,text,cls){
+  const box=document.getElementById('aiChatBox');if(!box)return;
+  const wrap=document.createElement('div');
+  wrap.style.cssText='display:flex;'+(role==='user'?'justify-content:flex-end':'justify-content:flex-start');
+  const b=document.createElement('div');
+  b.style.cssText='max-width:80%;padding:10px 14px;border-radius:12px;font-size:14px;line-height:1.55;white-space:pre-wrap;word-break:break-word;'+(role==='user'?'background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border-bottom-right-radius:4px':'background:var(--surface2);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px');
+  if(cls==='pending'){b.id='aiPending';b.style.opacity='.6';}
+  b.textContent=text;wrap.appendChild(b);box.appendChild(wrap);box.scrollTop=box.scrollHeight;
+}
+window.renderAiAssist=function(){
+  document.getElementById('aiInstrBtn').style.display=currentUser?.role==='admin'?'inline-flex':'none';
+  const box=document.getElementById('aiChatBox');
+  if(!aiHistory.length&&box&&!box.children.length){
+    aiAppend('ai','👋 你好，我是 PTL-PROP 的 AI 助手。我掌握平台所有已发布的房源，可以帮你：\n• 按客户需求（预算/地点/类型）配房\n• 比较房源、写房源介绍文案\n• 回答关于这些房源的问题\n\n直接问我吧！');
+  }
+};
+window.clearAiChat=function(){aiHistory=[];const b=document.getElementById('aiChatBox');if(b)b.innerHTML='';renderAiAssist();};
+window.sendAiMessage=async function(){
+  const inp=document.getElementById('aiInput');const text=(inp.value||'').trim();if(!text)return;
+  inp.value='';inp.style.height='auto';
+  aiAppend('user',text);aiHistory.push({role:'user',content:text});
+  aiAppend('ai','思考中…','pending');
+  const tok=await aiIdToken();
+  if(!tok){document.getElementById('aiPending')?.remove();aiAppend('ai','⚠️ 登录已过期，请重新登录');return;}
+  try{
+    const r=await fetch(AI_API+'/chat',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({messages:aiHistory})}).then(r=>r.json());
+    document.getElementById('aiPending')?.remove();
+    if(r.reply){aiAppend('ai',r.reply);aiHistory.push({role:'assistant',content:r.reply});}
+    else aiAppend('ai','⚠️ '+(r.error||'出错了，请稍后再试'));
+  }catch(e){document.getElementById('aiPending')?.remove();aiAppend('ai','⚠️ 连接失败，请检查网络');}
+};
+window.openAiInstructions=async function(){
+  const tok=await aiIdToken();if(!tok)return;
+  const r=await fetch(AI_API+'/instructions',{headers:{'Authorization':'Bearer '+tok}}).then(r=>r.json()).catch(()=>({}));
+  document.getElementById('aiInstrText').value=r.instructions||'';
+  document.getElementById('aiInstrModal').style.display='flex';
+};
+window.saveAiInstructions=async function(){
+  const tok=await aiIdToken();if(!tok)return;
+  const val=document.getElementById('aiInstrText').value;
+  const r=await fetch(AI_API+'/instructions',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({instructions:val})}).then(r=>r.json()).catch(()=>({}));
+  document.getElementById('aiInstrModal').style.display='none';
+  if(r.success)alert('✅ Instructions saved');
+};
+document.addEventListener('input',e=>{if(e.target&&e.target.id==='aiInput'){e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,120)+'px';}});
 
 // ===== BROWSE =====
 function setBrowseTab(type,el){
