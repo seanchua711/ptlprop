@@ -785,7 +785,7 @@ function renderNav(){
 }
 
 // ===== AI ASSISTANT =====
-const AI_API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://127.0.0.1:3300':'https://api.neo-ai.store/ptlprop';
+const AI_API=(location.hostname==='localhost'||location.hostname==='127.0.0.1')?'http://127.0.0.1:3300':'https://ptlprop.neo-ai.store';
 let aiHistory=[];
 let aiLang='auto';
 async function aiIdToken(){try{return auth.currentUser?await auth.currentUser.getIdToken():null;}catch(e){return null;}}
