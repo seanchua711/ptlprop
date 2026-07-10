@@ -354,22 +354,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
 
 <!-- WHATSAPP CRM -->
-<div class="page" id="page-wacrm" style="padding-top:72px">
-  <div style="height:calc(100vh - 72px);display:flex;flex-direction:column">
-    <div style="padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)" id="crmStatusDot"></div>
-        <span style="font-weight:600;font-size:15px">WhatsApp CRM</span>
-        <span style="color:var(--text-muted);font-size:13px" id="crmStatusText">Connected</span>
-      </div>
-      <div style="display:flex;gap:8px">
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById(&#39;crmFrame&#39;).src=document.getElementById(&#39;crmFrame&#39;).src">↺ Refresh</button>
-        <a href="http://139.180.187.93:3000/" target="_blank" class="btn btn-ghost btn-sm">⤢ Open Full</a>
-      </div>
-    </div>
-    <iframe id="crmFrame" src="./index_files/saved_resource.html" style="flex:1;border:none;width:100%;background:var(--surface2)" onload="crmLoaded()" onerror="crmError()"></iframe>
-  </div>
-</div>
+<!-- WA CRM page removed (belonged in the CRM, not this PWA) -->
 
 <!-- AI ASSISTANT -->
 <div class="page" id="page-aiassist" style="padding-top:72px">
@@ -778,7 +763,6 @@ function renderNav(){
   btns+=`<button class="btn btn-ghost btn-sm" onclick="showPage('page-wanted');renderWanted()">Wanted</button>`;
   if(role==='admin'||role==='team'||role==='agent'){
     btns+=`<button class="btn btn-sm" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.3)" onclick="showPage('page-aiassist');renderAiAssist()">🤖 AI Assistant</button>`;
-    btns+=`<button class="btn btn-sm" style="background:rgba(37,211,102,.15);color:#25d366;border:1px solid rgba(37,211,102,.3)" onclick="showPage('page-wacrm')">💬 WA CRM</button>`;
   }
   btns+=`<button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button>`;
   right.innerHTML=btns;
