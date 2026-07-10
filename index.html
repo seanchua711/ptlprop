@@ -1782,12 +1782,16 @@ window.adminDeleteTeam=async function(id){
 };
 
 window.resetUserPassword=async function(email){
+  const np=prompt('给 '+email+' 设置新密码（至少 6 位）：');
+  if(np===null)return;
+  if(!np||np.length<6){alert('密码至少要 6 位');return;}
   try{
-    await sendPasswordResetEmail(auth,email);
-    toast('Password reset email sent to '+email,'var(--green)');
-  }catch(e){
-    toast('Failed to send reset email','var(--red)');
-  }
+    const tok=await aiIdToken();
+    if(!tok){alert('登录已过期，请重新登录');return;}
+    const r=await fetch(AI_API+'/reset-password',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({email,newPassword:np})}).then(r=>r.json());
+    if(r.success)alert('✅ '+email+' 的密码已重置为：\n\n'+np+'\n\n请把这个新密码发给该 agent，让 TA 登录后自行修改。');
+    else alert('❌ '+(r.error||'重置失败'));
+  }catch(e){alert('❌ 连接失败，请重试');}
 };
 
 window.openCreateTeam=function(){
