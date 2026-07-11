@@ -858,24 +858,35 @@ window.waAction=async function(){
 function cEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 async function contactsFetch(p){const tok=await aiIdToken();return fetch(AI_API+p,{headers:{'Authorization':'Bearer '+tok}}).then(r=>r.json());}
 window.closeContacts=function(){document.getElementById('contactsModal').style.display='none';};
+let _allContacts=[], _tagFilter='', _curTags=[];
 window.openContacts=async function(){
   document.getElementById('contactsModal').style.display='flex';
   document.getElementById('contactsTitle').textContent='👥 我的客户';
   const body=document.getElementById('contactsBody');
   body.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:30px">加载中…</div>';
   const d=await contactsFetch('/contacts').catch(()=>({}));
-  const cs=d.contacts||[];
-  if(!cs.length){body.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:30px">还没有客户联系记录<br><span style="font-size:12px">客户通过 WhatsApp 发消息后会自动出现在这里</span></div>';return;}
-  body.innerHTML=cs.map(c=>`
+  _allContacts=d.contacts||[]; _tagFilter='';
+  renderContactsList();
+};
+window.filterByTag=function(t){_tagFilter=t;renderContactsList();};
+function renderContactsList(){
+  const body=document.getElementById('contactsBody');
+  if(!_allContacts.length){body.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:30px">还没有客户联系记录<br><span style="font-size:12px">客户通过 WhatsApp 发消息后会自动出现在这里</span></div>';return;}
+  const allTags=[...new Set(_allContacts.flatMap(c=>c.tags||[]))];
+  const filtered=_tagFilter?_allContacts.filter(c=>(c.tags||[]).includes(_tagFilter)):_allContacts;
+  const chip=(label,val,active)=>`<span onclick="filterByTag('${val}')" style="cursor:pointer;padding:3px 10px;border-radius:12px;font-size:12px;${active?'background:#a78bfa;color:#fff':'background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)'}">${label}</span>`;
+  const filterBar=allTags.length?`<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">${chip('全部','',!_tagFilter)}${allTags.map(t=>chip(cEsc(t),cEsc(t),_tagFilter===t)).join('')}</div>`:'';
+  body.innerHTML=filterBar+(filtered.map(c=>`
     <div onclick="openContactDetail('${c.jid}')" style="padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;background:var(--surface2)">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
         <div style="font-weight:600;color:var(--text)">📱 ${cEsc(c.phone)}${c.name?` <span style="font-weight:400;color:var(--text-muted);font-size:12px">${cEsc(c.name)}</span>`:''}</div>
         ${c.stage?`<span style="font-size:11px;background:rgba(124,58,237,.15);color:#a78bfa;padding:2px 8px;border-radius:10px;white-space:nowrap">${cEsc(c.stage)}</span>`:''}
       </div>
+      ${(c.tags&&c.tags.length)?`<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">${c.tags.map(t=>`<span style="font-size:10px;background:rgba(124,58,237,.1);color:#a78bfa;padding:1px 7px;border-radius:8px">${cEsc(t)}</span>`).join('')}</div>`:''}
       ${c.summary?`<div style="font-size:12px;color:var(--text-muted);margin-top:6px">${cEsc(c.summary)}</div>`:''}
       ${c.lastMessageAt?`<div style="font-size:11px;color:var(--text-muted);margin-top:6px;opacity:.6">${new Date(c.lastMessageAt).toLocaleString()}</div>`:''}
-    </div>`).join('');
-};
+    </div>`).join('')||'<div style="text-align:center;color:var(--text-muted);padding:20px">该标签下暂无客户</div>');
+}
 window.openContactDetail=async function(jid){
   const body=document.getElementById('contactsBody');
   document.getElementById('contactsTitle').innerHTML='<span onclick="openContacts()" style="cursor:pointer;color:#a78bfa">‹ 返回</span>&nbsp;&nbsp;'+cEsc(jid.split('@')[0]);
@@ -890,9 +901,29 @@ window.openContactDetail=async function(jid){
     ${m.summary?`<div style="font-size:12px;color:var(--text-muted);margin-top:8px;border-top:1px solid var(--border);padding-top:8px">${cEsc(m.summary)}</div>`:''}
   </div>`;
   const chat=msgs.length?msgs.map(x=>`<div style="display:flex;${x.role==='assistant'?'justify-content:flex-start':'justify-content:flex-end'};margin:4px 0"><div style="max-width:78%;padding:8px 12px;border-radius:10px;font-size:13px;word-break:break-word;${x.role==='assistant'?'background:var(--surface2);border:1px solid var(--border);color:var(--text)':'background:#25d366;color:#fff'}">${cEsc(x.content)}</div></div>`).join(''):'<div style="text-align:center;color:var(--text-muted);padding:20px">暂无聊天记录</div>';
-  body.innerHTML=memCard+'<div style="font-size:12px;font-weight:600;color:var(--text-muted);margin:10px 0 6px">💬 聊天记录</div>'+chat
+  _curTags=Array.isArray(m.tags)?m.tags.slice():[];
+  const tagsCard=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px">
+    <div style="font-size:12px;font-weight:600;color:#a78bfa;margin-bottom:8px">🏷 标签</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">${_curTags.length?_curTags.map(t=>`<span style="background:rgba(124,58,237,.15);color:#a78bfa;padding:3px 8px;border-radius:12px;font-size:12px">${cEsc(t)} <span onclick="removeTag('${jid}',this.parentNode.firstChild.textContent.trim())" style="cursor:pointer;opacity:.7">✕</span></span>`).join(''):'<span style="font-size:12px;color:var(--text-muted)">还没有标签，加一个来分类</span>'}</div>
+    <div style="display:flex;gap:6px">
+      <input id="newTagInput" placeholder="如：意向高 / 投资客 / 已看房" style="flex:1;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 10px;font-size:13px" onkeydown="if(event.key==='Enter')addTag('${jid}')"/>
+      <button onclick="addTag('${jid}')" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.3);border-radius:8px;padding:6px 12px;font-size:13px;cursor:pointer">+ 加</button>
+    </div>
+  </div>`;
+  body.innerHTML=memCard+tagsCard+'<div style="font-size:12px;font-weight:600;color:var(--text-muted);margin:10px 0 6px">💬 聊天记录</div>'+chat
     +`<div style="margin-top:16px;text-align:center"><button onclick="deleteContact('${jid}')" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">🗑 删除此客户</button></div>`;
 };
+window.addTag=async function(jid){
+  const inp=document.getElementById('newTagInput');const v=(inp.value||'').trim();if(!v)return;
+  if(!_curTags.includes(v))_curTags.push(v);
+  inp.value='';await saveTags(jid);
+};
+window.removeTag=async function(jid,t){_curTags=_curTags.filter(x=>x!==t);await saveTags(jid);};
+async function saveTags(jid){
+  const tok=await aiIdToken();if(!tok){alert('登录已过期');return;}
+  const r=await fetch(AI_API+'/contact-tags',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({jid,tags:_curTags})}).then(r=>r.json()).catch(()=>({}));
+  if(r.success)openContactDetail(jid);else alert('❌ 保存标签失败');
+}
 window.deleteContact=async function(jid){
   if(!confirm('删除这个客户的记忆和全部聊天记录？不可恢复'))return;
   const tok=await aiIdToken();if(!tok){alert('登录已过期');return;}
