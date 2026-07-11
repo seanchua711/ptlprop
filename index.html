@@ -1731,9 +1731,14 @@ window.adminReject=async function(uid){await updateDoc(doc(db,USERS,uid),{status
 window.adminSuspend=async function(uid){await updateDoc(doc(db,USERS,uid),{status:'suspended'});toast('Suspended','var(--red)');renderAdmin()};
 window.adminReinstate=async function(uid){await updateDoc(doc(db,USERS,uid),{status:'approved'});toast('Reinstated','var(--green)');renderAdmin()};
 window.adminDeleteUser=async function(uid){
-  if(!confirm('Delete this user permanently?'))return;
-  await deleteDoc(doc(db,USERS,uid));
-  toast('User deleted','var(--red)');renderAdmin();
+  if(!confirm('彻底删除这个用户？（资料 + 登录账号都会删掉，不可恢复）'))return;
+  try{
+    const tok=await aiIdToken();
+    if(!tok){alert('登录已过期，请重新登录');return;}
+    const r=await fetch(AI_API+'/delete-user',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({uid})}).then(r=>r.json());
+    if(r.success){toast('User deleted','var(--red)');renderAdmin();}
+    else alert('❌ '+(r.error||'删除失败'));
+  }catch(e){alert('❌ 连接失败，请重试');}
 };
 window.adminChangeRole=async function(uid, email){
   const role=document.getElementById('chrole_'+uid)?.value;
