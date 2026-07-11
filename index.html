@@ -890,7 +890,15 @@ window.openContactDetail=async function(jid){
     ${m.summary?`<div style="font-size:12px;color:var(--text-muted);margin-top:8px;border-top:1px solid var(--border);padding-top:8px">${cEsc(m.summary)}</div>`:''}
   </div>`;
   const chat=msgs.length?msgs.map(x=>`<div style="display:flex;${x.role==='assistant'?'justify-content:flex-start':'justify-content:flex-end'};margin:4px 0"><div style="max-width:78%;padding:8px 12px;border-radius:10px;font-size:13px;word-break:break-word;${x.role==='assistant'?'background:var(--surface2);border:1px solid var(--border);color:var(--text)':'background:#25d366;color:#fff'}">${cEsc(x.content)}</div></div>`).join(''):'<div style="text-align:center;color:var(--text-muted);padding:20px">暂无聊天记录</div>';
-  body.innerHTML=memCard+'<div style="font-size:12px;font-weight:600;color:var(--text-muted);margin:10px 0 6px">💬 聊天记录</div>'+chat;
+  body.innerHTML=memCard+'<div style="font-size:12px;font-weight:600;color:var(--text-muted);margin:10px 0 6px">💬 聊天记录</div>'+chat
+    +`<div style="margin-top:16px;text-align:center"><button onclick="deleteContact('${jid}')" style="background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:8px 16px;font-size:13px;cursor:pointer">🗑 删除此客户</button></div>`;
+};
+window.deleteContact=async function(jid){
+  if(!confirm('删除这个客户的记忆和全部聊天记录？不可恢复'))return;
+  const tok=await aiIdToken();if(!tok){alert('登录已过期');return;}
+  const r=await fetch(AI_API+'/delete-contact',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({jid})}).then(r=>r.json()).catch(()=>({}));
+  if(r.success)openContacts();
+  else alert('❌ '+(r.error||'删除失败'));
 };
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='aiInput'){e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,120)+'px';}});
 
