@@ -354,6 +354,17 @@ tr:hover td{background:rgba(255,255,255,.02)}
 </div>
 
 <!-- WHATSAPP CRM -->
+<!-- CONTACTS MODAL -->
+<div id="contactsModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:560px;max-height:85vh;display:flex;flex-direction:column">
+    <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
+      <div style="font-size:16px;font-weight:700;color:var(--text)" id="contactsTitle">👥 我的客户</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeContacts()">关闭</button>
+    </div>
+    <div id="contactsBody" style="flex:1;overflow-y:auto;padding:14px 16px"></div>
+  </div>
+</div>
+
 <!-- WA CRM page removed (belonged in the CRM, not this PWA) -->
 
 <!-- AI ASSISTANT -->
@@ -372,6 +383,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <option value="ms">Bahasa Melayu</option>
         </select>
         <button class="btn btn-sm" style="background:rgba(37,211,102,.15);color:#25d366;border:1px solid rgba(37,211,102,.3)" onclick="openWaModal()">📱 WhatsApp</button>
+        <button class="btn btn-sm" style="background:rgba(124,58,237,.12);color:#a78bfa;border:1px solid rgba(124,58,237,.3)" onclick="openContacts()">👥 Contacts</button>
         <button class="btn btn-ghost btn-sm" onclick="clearAiChat()">🗑 清空</button>
         <button class="btn btn-ghost btn-sm" id="aiInstrBtn" style="display:none" onclick="openAiInstructions()">⚙️ Instructions</button>
       </div>
@@ -841,6 +853,43 @@ window.waAction=async function(){
   const s=waState.status;
   if(s==='connected'||s==='qr'||s==='connecting'){await waFetch('/wa/disconnect','POST');waState={status:'disconnected'};renderWaBody();}
   else{waState={status:'connecting'};renderWaBody();await waFetch('/wa/connect','POST');}
+};
+// ===== CONTACTS（查看 WhatsApp 客户 + 记忆 + 聊天记录）=====
+function cEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+async function contactsFetch(p){const tok=await aiIdToken();return fetch(AI_API+p,{headers:{'Authorization':'Bearer '+tok}}).then(r=>r.json());}
+window.closeContacts=function(){document.getElementById('contactsModal').style.display='none';};
+window.openContacts=async function(){
+  document.getElementById('contactsModal').style.display='flex';
+  document.getElementById('contactsTitle').textContent='👥 我的客户';
+  const body=document.getElementById('contactsBody');
+  body.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:30px">加载中…</div>';
+  const d=await contactsFetch('/contacts').catch(()=>({}));
+  const cs=d.contacts||[];
+  if(!cs.length){body.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:30px">还没有客户联系记录<br><span style="font-size:12px">客户通过 WhatsApp 发消息后会自动出现在这里</span></div>';return;}
+  body.innerHTML=cs.map(c=>`
+    <div onclick="openContactDetail('${c.jid}')" style="padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;background:var(--surface2)">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+        <div style="font-weight:600;color:var(--text)">📱 ${cEsc(c.phone)}</div>
+        ${c.stage?`<span style="font-size:11px;background:rgba(124,58,237,.15);color:#a78bfa;padding:2px 8px;border-radius:10px;white-space:nowrap">${cEsc(c.stage)}</span>`:''}
+      </div>
+      ${c.summary?`<div style="font-size:12px;color:var(--text-muted);margin-top:6px">${cEsc(c.summary)}</div>`:''}
+      ${c.lastMessageAt?`<div style="font-size:11px;color:var(--text-muted);margin-top:6px;opacity:.6">${new Date(c.lastMessageAt).toLocaleString()}</div>`:''}
+    </div>`).join('');
+};
+window.openContactDetail=async function(jid){
+  const body=document.getElementById('contactsBody');
+  document.getElementById('contactsTitle').innerHTML='<span onclick="openContacts()" style="cursor:pointer;color:#a78bfa">‹ 返回</span>&nbsp;&nbsp;'+cEsc(jid.split('@')[0]);
+  body.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:30px">加载中…</div>';
+  const d=await contactsFetch('/contact?jid='+encodeURIComponent(jid)).catch(()=>({}));
+  const m=d.memory||{}, msgs=d.messages||[];
+  const rows=[['预算',m.budget],['意向',m.interest],['顾虑',m.objection],['阶段',m.stage]].filter(x=>x[1]);
+  const memCard=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px">
+    <div style="font-size:12px;font-weight:600;color:#a78bfa;margin-bottom:8px">🧠 客户记忆</div>
+    ${rows.length?rows.map(x=>`<div style="font-size:13px;margin:3px 0;color:var(--text)"><b>${x[0]}：</b>${cEsc(x[1])}</div>`).join(''):'<div style="font-size:12px;color:var(--text-muted)">暂无记忆（客户还没提供实质信息）</div>'}
+    ${m.summary?`<div style="font-size:12px;color:var(--text-muted);margin-top:8px;border-top:1px solid var(--border);padding-top:8px">${cEsc(m.summary)}</div>`:''}
+  </div>`;
+  const chat=msgs.length?msgs.map(x=>`<div style="display:flex;${x.role==='assistant'?'justify-content:flex-start':'justify-content:flex-end'};margin:4px 0"><div style="max-width:78%;padding:8px 12px;border-radius:10px;font-size:13px;word-break:break-word;${x.role==='assistant'?'background:var(--surface2);border:1px solid var(--border);color:var(--text)':'background:#25d366;color:#fff'}">${cEsc(x.content)}</div></div>`).join(''):'<div style="text-align:center;color:var(--text-muted);padding:20px">暂无聊天记录</div>';
+  body.innerHTML=memCard+'<div style="font-size:12px;font-weight:600;color:var(--text-muted);margin:10px 0 6px">💬 聊天记录</div>'+chat;
 };
 document.addEventListener('input',e=>{if(e.target&&e.target.id==='aiInput'){e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,120)+'px';}});
 
