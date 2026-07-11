@@ -743,6 +743,7 @@ function goHome(){
   if(!currentUser){showPage('page-login');return}
   if(currentUser.role==='admin'){showPage('page-admin');renderAdmin()}
   else if(currentUser.role==='team'){showPage('page-team');renderTeam()}
+  else if(currentUser.role==='agentassist'){showPage('page-aiassist');renderAiAssist()}
   else if(currentUser.role==='agent'){showPage('page-browse');renderBrowse()}
   else{showPage('page-browse');renderBrowse()}
 }
@@ -758,10 +759,10 @@ function renderNav(){
   let btns='';
   if(role==='admin'){btns+=`<button class="btn btn-ghost btn-sm" onclick="showPage('page-admin');renderAdmin()">Admin</button>`;}
   if(role==='team'){btns+=`<button class="btn btn-ghost btn-sm" onclick="showPage('page-team');renderTeam()">Team Panel</button>`;}
-  if(role==='agent'){btns+=`<button class="btn btn-ghost btn-sm" onclick="showPage('page-agent');renderMyListings()">My Listings</button>`;}
+  if(role==='agent'||role==='agentassist'){btns+=`<button class="btn btn-ghost btn-sm" onclick="showPage('page-agent');renderMyListings()">My Listings</button>`;}
   btns+=`<button class="btn btn-ghost btn-sm" onclick="showPage('page-browse');renderBrowse()">Browse</button>`;
   btns+=`<button class="btn btn-ghost btn-sm" onclick="showPage('page-wanted');renderWanted()">Wanted</button>`;
-  if(role==='admin'||role==='team'||role==='agent'){
+  if(role==='agentassist'||role==='admin'){
     btns+=`<button class="btn btn-sm" style="background:rgba(124,58,237,.15);color:#a78bfa;border:1px solid rgba(124,58,237,.3)" onclick="showPage('page-aiassist');renderAiAssist()">🤖 AI Assistant</button>`;
   }
   btns+=`<button class="btn btn-ghost btn-sm" onclick="doLogout()">Sign Out</button>`;
@@ -1251,6 +1252,7 @@ window._fbReady=async function(){
           }
           else if(currentUser.role==='admin'){showPage('page-admin');renderAdmin()}
           else if(currentUser.role==='team'){showPage('page-team');renderTeam()}
+          else if(currentUser.role==='agentassist'){showPage('page-aiassist');renderAiAssist()}
           else{showPage('page-browse');renderBrowse()}
         } else {
           hideLoading();renderNav();showPage('page-login');
@@ -1638,7 +1640,7 @@ window.renderAdmin=async function(){
             <td>${u.name}</td>
             <td style="color:var(--text-muted);font-size:12px">${u.email}</td>
             <td style="color:var(--text-muted);font-size:12px">${u.teamCode||'—'}</td>
-            <td><select class="form-select" id="arole_${u.uid}" style="padding:4px 8px;font-size:12px;width:auto"><option value="user">User</option><option value="agent">Agent</option><option value="team">Team</option></select></td>
+            <td><select class="form-select" id="arole_${u.uid}" style="padding:4px 8px;font-size:12px;width:auto"><option value="user">User</option><option value="agent">Agent</option><option value="agentassist">Agent Assistant</option><option value="team">Team</option></select></td>
             <td style="display:flex;gap:4px;flex-wrap:wrap">
               <button class="btn btn-green btn-sm" onclick="adminApprove('${u.uid}')">Approve</button>
               <button class="btn btn-danger btn-sm" onclick="adminReject('${u.uid}')">Reject</button>
@@ -1663,6 +1665,7 @@ window.renderAdmin=async function(){
               <select class="form-select" id="chrole_${u.uid}" style="padding:4px 8px;font-size:12px;width:auto">
                 <option value="user" ${(u.role||'user')==='user'?'selected':''}>User</option>
                 <option value="agent" ${u.role==='agent'?'selected':''}>Agent</option>
+                <option value="agentassist" ${u.role==='agentassist'?'selected':''}>Agent Assistant</option>
                 <option value="team" ${u.role==='team'?'selected':''}>Team</option>
                 <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
               </select>
