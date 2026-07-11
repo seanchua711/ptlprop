@@ -869,7 +869,7 @@ window.openContacts=async function(){
   body.innerHTML=cs.map(c=>`
     <div onclick="openContactDetail('${c.jid}')" style="padding:12px;border:1px solid var(--border);border-radius:10px;margin-bottom:8px;cursor:pointer;background:var(--surface2)">
       <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
-        <div style="font-weight:600;color:var(--text)">📱 ${cEsc(c.phone)}</div>
+        <div style="font-weight:600;color:var(--text)">📱 ${cEsc(c.phone)}${c.name?` <span style="font-weight:400;color:var(--text-muted);font-size:12px">${cEsc(c.name)}</span>`:''}</div>
         ${c.stage?`<span style="font-size:11px;background:rgba(124,58,237,.15);color:#a78bfa;padding:2px 8px;border-radius:10px;white-space:nowrap">${cEsc(c.stage)}</span>`:''}
       </div>
       ${c.summary?`<div style="font-size:12px;color:var(--text-muted);margin-top:6px">${cEsc(c.summary)}</div>`:''}
@@ -882,6 +882,7 @@ window.openContactDetail=async function(jid){
   body.innerHTML='<div style="text-align:center;color:var(--text-muted);padding:30px">加载中…</div>';
   const d=await contactsFetch('/contact?jid='+encodeURIComponent(jid)).catch(()=>({}));
   const m=d.memory||{}, msgs=d.messages||[];
+  document.getElementById('contactsTitle').innerHTML='<span onclick="openContacts()" style="cursor:pointer;color:#a78bfa">‹ 返回</span>&nbsp;&nbsp;📱 '+cEsc(m.phone||jid.split('@')[0])+(m.name?` <span style="font-weight:400;color:var(--text-muted);font-size:13px">${cEsc(m.name)}</span>`:'');
   const rows=[['预算',m.budget],['意向',m.interest],['顾虑',m.objection],['阶段',m.stage]].filter(x=>x[1]);
   const memCard=`<div style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:12px">
     <div style="font-size:12px;font-weight:600;color:#a78bfa;margin-bottom:8px">🧠 客户记忆</div>
