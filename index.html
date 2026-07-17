@@ -78,6 +78,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;background:rgba(15,25,35,0.9
 .form-select option{background:var(--surface2)}
 .form-textarea{resize:vertical;min-height:100px}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-row-3{grid-template-columns:1fr 1fr 1fr}
 .auth-link{text-align:center;margin-top:16px;font-size:14px;color:var(--text-muted)}
 .auth-link a{color:var(--gold);cursor:pointer}
 .auth-link a:hover{text-decoration:underline}
@@ -161,7 +162,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 .pending-icon{font-size:36px}
 .role-info-bar{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:10px 16px;margin-bottom:20px;display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text-muted)}
 @media(max-width:600px){
-  .form-row{grid-template-columns:1fr}
+  .form-row,.form-row-3{grid-template-columns:1fr}
   .auth-card{padding:28px 20px}
   .dash-title{font-size:24px}
   .detail-grid{grid-template-columns:1fr}
@@ -1317,6 +1318,9 @@ function listingCardHTML(l){
         <span>📍 ${l.location}</span>
         ${l.builtUp?`<span>🏗 ${l.builtUp}</span>`:''}
         ${l.landSize&&l.landSize!=='—'?`<span>📐 ${l.landSize}</span>`:''}
+        ${l.bedrooms?`<span>🛏 ${l.bedrooms}</span>`:''}
+        ${l.bathrooms?`<span>🛁 ${l.bathrooms}</span>`:''}
+        ${l.carPark?`<span>🚗 ${l.carPark}</span>`:''}
         ${l.createdAt?`<span>📅 ${l.createdAt}</span>`:''}
       </div>
       ${cobrokeBtn}
@@ -1359,6 +1363,11 @@ function renderListingForm(l){
     <div class="form-row">
       <div class="form-group"><label class="form-label">Land Size</label><input type="text" class="form-input" id="lLand" value="${l.landSize||''}" placeholder="e.g. 2,000 sqft"></div>
       <div class="form-group"><label class="form-label">Built Up</label><input type="text" class="form-input" id="lBuilt" value="${l.builtUp||''}" placeholder="e.g. 1,500 sqft"></div>
+    </div>
+    <div class="form-row form-row-3">
+      <div class="form-group"><label class="form-label">Bedrooms</label><input type="text" class="form-input" id="lBed" value="${l.bedrooms||''}" placeholder="e.g. 3"></div>
+      <div class="form-group"><label class="form-label">Bathrooms</label><input type="text" class="form-input" id="lBath" value="${l.bathrooms||''}" placeholder="e.g. 2"></div>
+      <div class="form-group"><label class="form-label">Car Park</label><input type="text" class="form-input" id="lCarPark" value="${l.carPark||''}" placeholder="e.g. 2"></div>
     </div>
     <div class="form-group"><label class="form-label">Description (max 150 words)</label><textarea class="form-textarea" id="lDesc" rows="4" oninput="countWords(this)" placeholder="Describe the property...">${l.description||''}</textarea><div class="char-count" id="wordCount">0 / 150 words</div></div>
     <div class="form-group"><label class="form-label">Status</label><select class="form-select" id="lStatus"><option value="draft" ${!l.status||l.status==='draft'?'selected':''}>Draft</option><option value="published" ${l.status==='published'?'selected':''}>Published</option></select></div>
@@ -1843,6 +1852,9 @@ window.saveListing=async function(){
   const loc=document.getElementById('lLoc').value.trim();
   const landSize=document.getElementById('lLand').value.trim();
   const builtUp=document.getElementById('lBuilt').value.trim();
+  const bedrooms=document.getElementById('lBed').value.trim();
+  const bathrooms=document.getElementById('lBath').value.trim();
+  const carPark=document.getElementById('lCarPark').value.trim();
   const desc=document.getElementById('lDesc').value.trim();
   const status=document.getElementById('lStatus').value;
   if(!title||!price||!loc){toast('Please fill required fields','var(--red)');return}
@@ -1861,7 +1873,7 @@ window.saveListing=async function(){
   }
 
   const now=new Date().toISOString().slice(0,10);
-  const data={title,type,category:cat,price,location:loc,landSize,builtUp,description:desc,status,images:imageUrls,userId:currentUser.uid,userName:currentUser.name,userPhone:currentUser.phone||'',teamId:currentUser.teamId||'',createdAt:now};
+  const data={title,type,category:cat,price,location:loc,landSize,builtUp,bedrooms,bathrooms,carPark,description:desc,status,images:imageUrls,userId:currentUser.uid,userName:currentUser.name,userPhone:currentUser.phone||'',teamId:currentUser.teamId||'',createdAt:now};
   try{
     if(editingListingId){await updateDoc(doc(db,LISTINGS,editingListingId),data);toast('Updated!','var(--green)')}
     else{await addDoc(collection(db,LISTINGS),data);toast('Listing created!','var(--green)')}
@@ -1911,6 +1923,9 @@ window.viewListing=async function(id){
         <div class="detail-item"><label>Category</label><p>${l.category}</p></div>
         <div class="detail-item"><label>Land Size</label><p>${l.landSize||'—'}</p></div>
         <div class="detail-item"><label>Built Up</label><p>${l.builtUp||'—'}</p></div>
+        <div class="detail-item"><label>Bedrooms</label><p>${l.bedrooms||'—'}</p></div>
+        <div class="detail-item"><label>Bathrooms</label><p>${l.bathrooms||'—'}</p></div>
+        <div class="detail-item"><label>Car Park</label><p>${l.carPark||'—'}</p></div>
         <div class="detail-item"><label>Published Date</label><p>${l.createdAt||'—'}</p></div>
       </div>
     </div>
