@@ -878,6 +878,11 @@ async function aiIdToken(){try{
   if(!_aiAuth.currentUser&&_aiAuth.authStateReady)await _aiAuth.authStateReady();
   return _aiAuth.currentUser?await _aiAuth.currentUser.getIdToken():null;
 }catch(e){return null;}}
+// 改房源/co-broke/公司设置后通知 AI 后端清缓存,让 WhatsApp 回复立即用最新数据(fire-and-forget;失败最多等 TTL)。
+async function aiClearCache(scope,agentId){try{
+  const tok=await aiIdToken();if(!tok)return;
+  await fetch(AI_API+'/cache/clear',{method:'POST',headers:{'Authorization':'Bearer '+tok,'Content-Type':'application/json'},body:JSON.stringify(agentId?{scope,agentId}:{scope})});
+}catch(e){}}
 function aiAppend(role,text,cls){
   const box=document.getElementById('aiChatBox');if(!box)return;
   const wrap=document.createElement('div');
@@ -1270,7 +1275,7 @@ window.toggleCobroke=async function(id,btn){
   if(cobrokeIds.has(id))cobrokeIds.delete(id);else cobrokeIds.add(id);
   const on=cobrokeIds.has(id);
   paintCobrokeBtn(btn,on);
-  try{const {f,db}=await _cbFs();await f.setDoc(f.doc(db,'ptlprop_cobroke',currentUser.uid),{agentUid:currentUser.uid,listingIds:[...cobrokeIds]},{merge:true});toast(on?'Added to your co-broke listings':'Removed from co-broke','var(--green)');}
+  try{const {f,db}=await _cbFs();await f.setDoc(f.doc(db,'ptlprop_cobroke',currentUser.uid),{agentUid:currentUser.uid,listingIds:[...cobrokeIds]},{merge:true});aiClearCache('cobroke');toast(on?'Added to your co-broke listings':'Removed from co-broke','var(--green)');}
   catch(e){console.error('cobroke save error:',e);toast('Failed to save: '+(e.code||e.message||'unknown'),'var(--red)');
     // 保存失败就把内存状态回滚，避免和数据库不一致
     if(on)cobrokeIds.delete(id);else cobrokeIds.add(id);
@@ -1877,6 +1882,7 @@ window.saveListing=async function(){
   try{
     if(editingListingId){await updateDoc(doc(db,LISTINGS,editingListingId),data);toast('Updated!','var(--green)')}
     else{await addDoc(collection(db,LISTINGS),data);toast('Listing created!','var(--green)')}
+    aiClearCache('listings'); // 房源变了 → 清 AI 后端的房源缓存
     closeModal('listingModal');
     renderMyListings();renderBrowse();
   }catch(e){
