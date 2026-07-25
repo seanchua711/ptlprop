@@ -177,6 +177,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
   .nav-right{position:absolute;top:72px;right:8px;left:8px;flex-direction:column;align-items:stretch;gap:6px;background:rgba(15,25,35,0.98);border:1px solid var(--border);border-radius:12px;padding:10px;display:none;box-shadow:0 10px 30px rgba(0,0,0,.45)}
   .nav-right.open{display:flex}
   .nav-right .btn{width:100%;justify-content:center;text-align:center}
+  .ai-head{flex-direction:column;align-items:stretch !important;gap:10px}
+  .ai-tools{flex-wrap:wrap}
 }
 </style>
 </head>
@@ -453,12 +455,12 @@ tr:hover td{background:rgba(255,255,255,.02)}
 <!-- AI ASSISTANT -->
 <div class="page" id="page-aiassist" style="padding-top:72px">
   <div style="max-width:840px;margin:0 auto;padding:16px 18px;height:calc(100vh - 72px);display:flex;flex-direction:column">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0">
+    <div class="ai-head" style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-shrink:0">
       <div>
         <div style="font-size:18px;font-weight:700;color:var(--text)">🤖 AI Assistant</div>
         <div style="font-size:12px;color:var(--text-muted)" id="aiSub">Match properties, compare prices & write copy using real platform listings</div>
       </div>
-      <div style="display:flex;gap:8px;align-items:center">
+      <div class="ai-tools" style="display:flex;gap:8px;align-items:center">
         <select id="aiLang" onchange="aiLang=this.value" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:6px 8px;font-size:13px;cursor:pointer">
           <option value="auto">🌐 Auto</option>
           <option value="zh">中文</option>
