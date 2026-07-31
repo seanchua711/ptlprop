@@ -530,6 +530,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="tab active" onclick="showAdminTab(&#39;users&#39;,this)">User Approvals</div>
       <div class="tab" onclick="showAdminTab(&#39;teams&#39;,this)">Teams</div>
       <div class="tab" onclick="showAdminTab(&#39;listings&#39;,this)">All Listings</div>
+      <div class="tab" onclick="showAdminTab(&#39;mediaGroup&#39;,this)">📥 Media Group</div>
     </div>
     <div id="adminUsers">
     <div style="color:var(--green);text-align:center;padding:16px;background:rgba(61,190,142,.08);border-radius:8px;margin-bottom:20px;font-size:14px">✓ No pending approvals</div>
@@ -828,6 +829,8 @@ tr:hover td{background:rgba(255,255,255,.02)}
           <td><button class="btn btn-ghost btn-sm" onclick="viewListing(&#39;zpeiBiB8W9IunH2UMvcB&#39;)">View</button></td>
         </tr></tbody>
     </table></div>
+  </div>
+    <div id="adminMediaGroup" style="display:none"></div>
   </div>
   </div>
 </div>
@@ -1435,7 +1438,7 @@ function crmError(){
 
 function showAdminTab(tab,el){
   document.querySelectorAll('#page-admin .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
-  ['adminUsers','adminTeams','adminListings'].forEach(id=>document.getElementById(id).style.display='none');
+  ['adminUsers','adminTeams','adminListings','adminMediaGroup'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('admin'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display='';
 }
 function showTeamTab(tab,el){
@@ -1492,6 +1495,7 @@ const db=getFirestore(app);
 const USERS='ptlprop_users';
 const TEAMS='ptlprop_teams';
 const LISTINGS='ptlprop_listings';
+const MEDIA='ptlprop_media_listings';
 const WANTED='ptlprop_wanted';
 window.renderWanted=async function(){
   const search=(document.getElementById('wantedSearch')?.value||'').toLowerCase();
@@ -2204,6 +2208,99 @@ window.renderAdmin=async function(){
         </tr>`).join('')}</tbody>
     </table></div>
   `;
+  // Media Group tab (isolated: never let its errors break the rest of the panel)
+  try{ await renderMediaGroup(); }
+  catch(e){ document.getElementById('adminMediaGroup').innerHTML=`<div style="color:var(--text-muted);padding:16px">Media Group unavailable: ${e.message}</div>`; }
+};
+
+// ===== MEDIA GROUP (admin-only: listings captured from Telegram/WhatsApp groups) =====
+let _mediaItems=[];
+let _mediaFilter={platform:'all',group:'all'};
+function mesc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+window.renderMediaGroup=async function(){
+  const snap=await getDocs(collection(db,MEDIA));
+  _mediaItems=snap.docs.map(d=>({id:d.id,...d.data()}))
+    .sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0));
+  _mediaFilter={platform:'all',group:'all'};
+  drawMedia();
+};
+window.mediaFilterSet=function(kind,val){_mediaFilter[kind]=val;drawMedia();};
+function drawMedia(){
+  const box=document.getElementById('adminMediaGroup');
+  const f=_mediaFilter;
+  const groups=[...new Set(_mediaItems.map(m=>m.groupName||m.groupId).filter(Boolean))];
+  const shown=_mediaItems.filter(m=>(f.platform==='all'||m.platform===f.platform)&&(f.group==='all'||(m.groupName||m.groupId)===f.group));
+  const chip=(active,label,onclick)=>`<button class="btn btn-sm" style="${active?'background:var(--gold);color:#1a1a1a':'background:var(--surface2);color:var(--text-muted);border:1px solid var(--border)'}" onclick="${onclick}">${label}</button>`;
+  const pfBar=[['all','All'],['whatsapp','WhatsApp'],['telegram','Telegram']]
+    .map(([v,l])=>chip(f.platform===v,l,`mediaFilterSet('platform','${v}')`)).join('');
+  const grBar=['all',...groups]
+    .map(v=>chip(f.group===v,v==='all'?'All groups':mesc(v),`mediaFilterSet('group','${mesc(v).replace(/'/g,"\\'")}')`)).join('');
+  box.innerHTML=`
+    <div style="color:var(--text-muted);font-size:13px;margin-bottom:12px">Listings auto-captured from Telegram / WhatsApp groups. Review, edit, then approve to publish — or reject.</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px"><span style="font-size:11px;color:var(--text-muted);align-self:center;text-transform:uppercase;letter-spacing:.6px">Platform</span>${pfBar}</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px"><span style="font-size:11px;color:var(--text-muted);align-self:center;text-transform:uppercase;letter-spacing:.6px">Group</span>${grBar}</div>
+    ${shown.length?shown.map(m=>mediaCard(m)).join(''):'<div style="color:var(--green);text-align:center;padding:24px;background:rgba(61,190,142,.08);border-radius:8px">✓ Nothing pending in Media Group</div>'}
+  `;
+}
+function mediaCard(m){
+  const id=m.id;
+  const badge=m.platform==='whatsapp'?'<span class="badge" style="background:#25d366;color:#062">WhatsApp</span>':'<span class="badge" style="background:#2aabee;color:#012">Telegram</span>';
+  const inp=(f,label,val,ph='')=>`<div style="flex:1;min-width:120px"><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">${label}</div><input id="${f}_${id}" value="${mesc(val)}" placeholder="${ph}" style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px"/></div>`;
+  return `
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:14px">
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px">
+      ${badge}
+      <span style="font-size:13px;color:var(--text)">📍 ${mesc(m.groupName||m.groupId||'—')}</span>
+      <span style="font-size:12px;color:var(--text-muted)">·  ${mesc(m.posterName||'—')}${m.posterPhone?' · '+mesc(m.posterPhone):''}${m.posterHandle?' · '+mesc(m.posterHandle):''}</span>
+    </div>
+    <details style="margin-bottom:12px"><summary style="cursor:pointer;font-size:12px;color:var(--text-muted)">Original message</summary><div style="white-space:pre-wrap;font-size:12px;color:var(--text);background:var(--surface2);border-radius:6px;padding:10px;margin-top:6px">${mesc(m.rawText||'')}</div></details>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      ${inp('m_title','Title',m.title,'Listing title')}
+      ${inp('m_price','Price',m.price,'RM ...')}
+      ${inp('m_location','Location',m.location)}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      ${inp('m_type','Type (sale/rent)',m.type)}
+      ${inp('m_category','Category',m.category)}
+      ${inp('m_bed','Bedrooms',m.bedrooms)}
+      ${inp('m_bath','Bathrooms',m.bathrooms)}
+      ${inp('m_size','Size',m.size)}
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+      ${inp('m_poster','Contact name',m.posterName)}
+      ${inp('m_phone','Contact phone',m.posterPhone,'for WhatsApp contact button')}
+    </div>
+    <div style="margin-bottom:12px"><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">Description</div><textarea id="m_desc_${id}" style="width:100%;min-height:60px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:8px;font-size:13px">${mesc(m.description||'')}</textarea></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn btn-danger btn-sm" onclick="mediaReject('${id}')">Reject</button>
+      <button class="btn btn-green btn-sm" onclick="mediaApprove('${id}')">Approve &amp; Publish</button>
+    </div>
+  </div>`;
+}
+window.mediaApprove=async function(id){
+  const g=p=>(document.getElementById(p+'_'+id)?.value||'').trim();
+  const title=g('m_title');
+  if(!title){toast('Title required to publish','var(--red)');return;}
+  const size=g('m_size');
+  let desc=g('m_desc');
+  if(size)desc=(desc?desc+'\n':'')+'Size: '+size;
+  const data={
+    title,type:g('m_type'),category:g('m_category'),price:g('m_price'),location:g('m_location'),
+    landSize:'',builtUp:'',bedrooms:g('m_bed'),bathrooms:g('m_bath'),carPark:'',
+    description:desc,status:'published',images:[],
+    userId:'media-group',userName:g('m_poster'),userPhone:g('m_phone'),teamId:'',
+    source:'media-group',createdAt:serverTimestamp()
+  };
+  await addDoc(collection(db,LISTINGS),data);
+  await deleteDoc(doc(db,MEDIA,id));
+  toast('Published to listings','var(--green)');
+  renderAdmin();
+};
+window.mediaReject=async function(id){
+  if(!confirm('Reject and remove this captured listing?'))return;
+  await deleteDoc(doc(db,MEDIA,id));
+  toast('Rejected','var(--red)');
+  renderMediaGroup();
 };
 
 window.adminApprove=async function(uid){
