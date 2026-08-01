@@ -2291,7 +2291,7 @@ window.mediaApprove=async function(id){
     landSize:'',builtUp:'',bedrooms:g('m_bed'),bathrooms:g('m_bath'),carPark:'',
     description:desc,status:'published',images:[],
     userId:'media-group',userName:g('m_poster'),userPhone:g('m_phone'),teamId:'',
-    source:'media-group',postedAt:src.postedAt||null,createdAt:serverTimestamp()
+    source:'media-group',postedAt:src.postedAt||null,tgMsgId:(src.tgMsgId??null),srcGroupId:(src.groupId||''),createdAt:serverTimestamp()
   };
   await addDoc(collection(db,LISTINGS),data);
   await deleteDoc(doc(db,MEDIA,id));
