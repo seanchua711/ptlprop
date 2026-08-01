@@ -2307,13 +2307,17 @@ window.mediaApprove=async function(id){
     toast('Published to listings','var(--green)');
   }
   await deleteDoc(doc(db,MEDIA,id));
-  renderAdmin();
+  // Remove locally instead of re-reading the whole admin panel (that full reload
+  // per approve is what burns Firestore read quota). No extra reads.
+  _mediaItems=_mediaItems.filter(x=>x.id!==id);
+  drawMedia();
 };
 window.mediaReject=async function(id){
   if(!confirm('Reject and remove this captured listing?'))return;
   await deleteDoc(doc(db,MEDIA,id));
   toast('Rejected','var(--red)');
-  renderMediaGroup();
+  _mediaItems=_mediaItems.filter(x=>x.id!==id);
+  drawMedia();
 };
 
 window.adminApprove=async function(uid){
