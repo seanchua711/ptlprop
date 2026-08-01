@@ -2261,7 +2261,7 @@ function mediaCard(m){
       ${inp('m_location','Location',m.location)}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-      ${inp('m_type','Type (sale/rent)',m.type)}
+      <div style="flex:1;min-width:120px"><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">Type (needed for Browse)</div><select id="m_type_${id}" style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px"><option value="" ${m.type!=='sale'&&m.type!=='rent'?'selected':''}>— pick —</option><option value="sale" ${m.type==='sale'?'selected':''}>Sale</option><option value="rent" ${m.type==='rent'?'selected':''}>Rent</option></select></div>
       ${inp('m_category','Category',m.category)}
       ${inp('m_bed','Bedrooms',m.bedrooms)}
       ${inp('m_bath','Bathrooms',m.bathrooms)}
@@ -2282,6 +2282,8 @@ window.mediaApprove=async function(id){
   const g=p=>(document.getElementById(p+'_'+id)?.value||'').trim();
   const title=g('m_title');
   if(!title){toast('Title required to publish','var(--red)');return;}
+  const mtype=g('m_type');
+  if(mtype!=='sale'&&mtype!=='rent'){toast('Set Type to Sale or Rent (needed to show in Browse)','var(--red)');return;}
   const size=g('m_size');
   let desc=g('m_desc');
   if(size)desc=(desc?desc+'\n':'')+'Size: '+size;
