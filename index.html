@@ -2262,7 +2262,7 @@ function mediaCard(m){
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
       <div style="flex:1;min-width:120px"><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">Type (needed for Browse)</div><select id="m_type_${id}" style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px"><option value="" ${m.type!=='sale'&&m.type!=='rent'?'selected':''}>— pick —</option><option value="sale" ${m.type==='sale'?'selected':''}>Sale</option><option value="rent" ${m.type==='rent'?'selected':''}>Rent</option></select></div>
-      ${inp('m_category','Category',m.category)}
+      <div style="flex:1;min-width:120px"><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">Category</div><select id="m_category_${id}" style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px"><option value="" ${!['residential','commercial','industrial'].includes(m.category)?'selected':''}>— pick —</option><option value="residential" ${m.category==='residential'?'selected':''}>Residential</option><option value="commercial" ${m.category==='commercial'?'selected':''}>Commercial</option><option value="industrial" ${m.category==='industrial'?'selected':''}>Industrial</option></select></div>
       ${inp('m_bed','Bedrooms',m.bedrooms)}
       ${inp('m_bath','Bathrooms',m.bathrooms)}
       ${inp('m_size','Size',m.size)}
