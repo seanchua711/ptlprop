@@ -2252,6 +2252,7 @@ function mediaCard(m){
       ${badge}
       <span style="font-size:13px;color:var(--text)">📍 ${mesc(m.groupName||m.groupId||'—')}</span>
       <span style="font-size:12px;color:var(--text-muted)">·  ${mesc(m.posterName||'—')}${m.posterPhone?' · '+mesc(m.posterPhone):''}${m.posterHandle?' · '+mesc(m.posterHandle):''}</span>
+      ${m.postedAt?.toDate?`<span style="font-size:12px;color:var(--gold)">·  📅 ${mesc(m.postedAt.toDate().toLocaleString())}</span>`:''}
     </div>
     <details style="margin-bottom:12px"><summary style="cursor:pointer;font-size:12px;color:var(--text-muted)">Original message</summary><div style="white-space:pre-wrap;font-size:12px;color:var(--text);background:var(--surface2);border-radius:6px;padding:10px;margin-top:6px">${mesc(m.rawText||'')}</div></details>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
@@ -2284,12 +2285,13 @@ window.mediaApprove=async function(id){
   const size=g('m_size');
   let desc=g('m_desc');
   if(size)desc=(desc?desc+'\n':'')+'Size: '+size;
+  const src=_mediaItems.find(x=>x.id===id)||{};
   const data={
     title,type:g('m_type'),category:g('m_category'),price:g('m_price'),location:g('m_location'),
     landSize:'',builtUp:'',bedrooms:g('m_bed'),bathrooms:g('m_bath'),carPark:'',
     description:desc,status:'published',images:[],
     userId:'media-group',userName:g('m_poster'),userPhone:g('m_phone'),teamId:'',
-    source:'media-group',createdAt:serverTimestamp()
+    source:'media-group',postedAt:src.postedAt||null,createdAt:serverTimestamp()
   };
   await addDoc(collection(db,LISTINGS),data);
   await deleteDoc(doc(db,MEDIA,id));
