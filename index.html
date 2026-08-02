@@ -1947,7 +1947,7 @@ window.viewListing=async function(id){
         <div class="detail-item"><label>Bedrooms</label><p>${l.bedrooms||'—'}</p></div>
         <div class="detail-item"><label>Bathrooms</label><p>${l.bathrooms||'—'}</p></div>
         <div class="detail-item"><label>Car Park</label><p>${l.carPark||'—'}</p></div>
-        <div class="detail-item"><label>Published Date</label><p>${l.createdAt||'—'}</p></div>
+        <div class="detail-item"><label>Posted Date</label><p>${(l.postedAt||l.createdAt)?.toDate?.().toLocaleDateString()||'—'}</p></div>
       </div>
     </div>
     <div class="detail-section"><h4>Description</h4><p style="font-size:14px;color:var(--text-muted);line-height:1.7">${l.description||'—'}</p></div>
