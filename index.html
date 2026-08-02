@@ -471,6 +471,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <button class="btn btn-sm" style="background:rgba(124,58,237,.12);color:#a78bfa;border:1px solid rgba(124,58,237,.3)" onclick="openContacts()">👥 Contacts</button>
         <button class="btn btn-sm" style="background:rgba(37,211,102,.12);color:#25d366;border:1px solid rgba(37,211,102,.3)" onclick="openFollowupModal()">⏰ Follow-up</button>
         <button class="btn btn-ghost btn-sm" onclick="clearAiChat()">🗑 Clear</button>
+        <button class="btn btn-ghost btn-sm" id="aiMediaBtn" style="display:none" title="Step 1（你的+co-broke）没匹配时，AI 才从 Media 采集库找货" onclick="toggleMediaFallback()">📥 Media</button>
         <button class="btn btn-ghost btn-sm" id="aiInstrBtn" style="display:none" onclick="openAiInstructions()">⚙️ Instructions</button>
       </div>
     </div>
@@ -906,8 +907,29 @@ function aiAppend(role,text,cls){
   if(cls==='pending'){b.id='aiPending';b.style.opacity='.6';}
   b.textContent=text;wrap.appendChild(b);box.appendChild(wrap);box.scrollTop=box.scrollHeight;
 }
+let _mediaFb=false;
+function updateMediaBtn(){const b=document.getElementById('aiMediaBtn');if(!b)return;
+  b.innerHTML='📥 Media 兜底: '+(_mediaFb?'<b style="color:var(--green)">ON</b>':'OFF');
+  b.style.background=_mediaFb?'rgba(42,171,238,.15)':'';b.style.color=_mediaFb?'#2aabee':'';
+}
+window.loadMediaFallback=async function(){
+  try{const tok=await aiIdToken();if(!tok)return;
+    const r=await fetch(AI_API+'/media-fallback',{headers:{'Authorization':'Bearer '+tok}}).then(r=>r.json());
+    _mediaFb=!!r.enabled;updateMediaBtn();
+  }catch(e){}
+};
+window.toggleMediaFallback=async function(){
+  try{const tok=await aiIdToken();if(!tok)return;
+    const r=await fetch(AI_API+'/media-fallback',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({enabled:!_mediaFb})}).then(r=>r.json());
+    _mediaFb=!!r.enabled;updateMediaBtn();
+    toast(_mediaFb?'Media 兜底已开启（Step 1 无匹配时用）':'Media 兜底已关闭',_mediaFb?'var(--green)':'var(--text-muted)');
+  }catch(e){toast('操作失败','var(--red)');}
+};
 window.renderAiAssist=function(){
-  document.getElementById('aiInstrBtn').style.display=(currentUser?.role==='agentassist'||currentUser?.role==='admin')?'inline-flex':'none';
+  const showTools=(currentUser?.role==='agentassist'||currentUser?.role==='admin');
+  document.getElementById('aiInstrBtn').style.display=showTools?'inline-flex':'none';
+  document.getElementById('aiMediaBtn').style.display=showTools?'inline-flex':'none';
+  if(showTools)loadMediaFallback();
   const box=document.getElementById('aiChatBox');
   if(!aiHistory.length&&box&&!box.children.length){
     aiAppend('ai','👋 Hi, I\'m the PTL-PROP AI Assistant. I know every published listing on the platform and can help you:\n• Match properties to client needs (budget/location/type)\n• Compare listings & write listing descriptions\n• Answer questions about these listings\n\nJust ask me anything!');
