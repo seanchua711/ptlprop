@@ -2197,9 +2197,10 @@ window.renderAdmin=async function(){
   _allListings = listings;
   document.getElementById('adminListings').innerHTML=`
     <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px">
+      <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">Search agent</div><input type="text" id="llAgent" oninput="drawAdminListings()" placeholder="🔍 agent name" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;min-width:150px"/></div>
       <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">From date</div><input type="date" id="llFrom" onchange="drawAdminListings()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px"/></div>
       <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">To date</div><input type="date" id="llTo" onchange="drawAdminListings()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px"/></div>
-      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('llFrom').value='';document.getElementById('llTo').value='';drawAdminListings()">Clear</button>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('llAgent').value='';document.getElementById('llFrom').value='';document.getElementById('llTo').value='';drawAdminListings()">Clear</button>
       <span style="color:var(--text-muted);font-size:12px;align-self:center">Showing <b id="llCount">${listings.length}</b> (by posted date, newest first)</span>
     </div>
     <div class="admin-table-wrap"><table>
@@ -2228,10 +2229,11 @@ window.drawAdminListings=function(){
   const fromT=from?new Date(from+'T00:00:00').getTime():null;
   const toT=to?new Date(to+'T23:59:59').getTime():null;
   const ld=l=>(l.postedAt||l.createdAt)?.toDate?.()||null;
+  const ag=(document.getElementById('llAgent')?.value||'').toLowerCase().trim();
   let list=_allListings.filter(l=>{
-    if(!fromT&&!toT)return true;
-    const d=ld(l); if(!d)return false; const t=d.getTime();
-    return (!fromT||t>=fromT)&&(!toT||t<=toT);
+    if(fromT||toT){const d=ld(l); if(!d)return false; const t=d.getTime(); if((fromT&&t<fromT)||(toT&&t>toT))return false;}
+    if(ag&&!(l.userName||'').toLowerCase().includes(ag))return false;
+    return true;
   });
   list=[...list].sort((a,b)=>((ld(b)?.getTime()||0)-(ld(a)?.getTime()||0)));
   const c=document.getElementById('llCount'); if(c)c.textContent=list.length;
