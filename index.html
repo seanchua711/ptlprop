@@ -2196,11 +2196,12 @@ window.renderAdmin=async function(){
   // Listings tab
   document.getElementById('adminListings').innerHTML=`
     <div class="admin-table-wrap"><table>
-      <thead><tr><th>Title</th><th>Agent</th><th>Type</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Title</th><th>Agent</th><th>From</th><th>Type</th><th>Category</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody>${listings.map(l=>`
         <tr>
           <td style="cursor:pointer;color:var(--gold)" onclick="viewListing('${l.id}')">${l.title}</td>
           <td style="color:var(--text-muted);font-size:12px">${l.userName||'—'}</td>
+          <td>${l.source==='media-group'?'<span class="badge" style="background:#2aabee;color:#012">📥 media</span>':'<span style="color:var(--text-muted);font-size:12px">—</span>'}</td>
           <td><span class="badge badge-${l.type}">${l.type}</span></td>
           <td style="color:var(--text-muted);font-size:12px">${l.category}</td>
           <td><span class="badge badge-${l.status==='published'?'published':l.status==='sold'?'sold':l.status==='rented'?'rented':'draft'}">${l.status}</span></td>
