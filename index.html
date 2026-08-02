@@ -2203,7 +2203,7 @@ window.renderAdmin=async function(){
       <span style="color:var(--text-muted);font-size:12px;align-self:center">Showing <b id="llCount">${listings.length}</b> (by posted date, newest first)</span>
     </div>
     <div class="admin-table-wrap"><table>
-      <thead><tr><th>Title</th><th>Agent</th><th>From</th><th>Type</th><th>Category</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Title</th><th>Agent</th><th>From</th><th>Group</th><th>Type</th><th>Category</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
       <tbody id="adminListingsBody"></tbody>
     </table></div>
   `;
@@ -2241,12 +2241,13 @@ window.drawAdminListings=function(){
           <td style="cursor:pointer;color:var(--gold)" onclick="viewListing('${l.id}')">${l.title}</td>
           <td style="color:var(--text-muted);font-size:12px">${l.userName||'—'}</td>
           <td>${fromBadge(l)}</td>
+          <td style="color:var(--text-muted);font-size:12px">${l.groupName||l.srcGroupId||'—'}</td>
           <td><span class="badge badge-${l.type}">${l.type}</span></td>
           <td style="color:var(--text-muted);font-size:12px">${l.category}</td>
           <td style="color:var(--text-muted);font-size:12px">${ld(l)?ld(l).toLocaleDateString():'—'}</td>
           <td><span class="badge badge-${l.status==='published'?'published':l.status==='sold'?'sold':l.status==='rented'?'rented':'draft'}">${l.status}</span></td>
           <td><button class="btn btn-ghost btn-sm" onclick="viewListing('${l.id}')">View</button></td>
-        </tr>`).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">No listings in this date range</td></tr>';
+        </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;color:var(--text-muted);padding:24px">No listings in this date range</td></tr>';
 };
 let _mediaFilter={platform:'all',group:'all'};
 function mesc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
@@ -2328,7 +2329,7 @@ window.mediaApprove=async function(id){
     landSize:'',builtUp:'',bedrooms:g('m_bed'),bathrooms:g('m_bath'),carPark:'',
     description:desc,status:'published',images:[],
     userId:'media-group',userName:g('m_poster'),userPhone:g('m_phone'),teamId:'',
-    source:'media-group',platform:(src.platform||''),postedAt:src.postedAt||null,tgMsgId:(src.tgMsgId??null),srcGroupId:(src.groupId||''),createdAt:serverTimestamp()
+    source:'media-group',platform:(src.platform||''),groupName:(src.groupName||''),postedAt:src.postedAt||null,tgMsgId:(src.tgMsgId??null),srcGroupId:(src.groupId||''),createdAt:serverTimestamp()
   };
   if(mtype==='both'){
     // Appears in BOTH Browse tabs: one sale listing + one rent listing.
