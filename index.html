@@ -1340,7 +1340,7 @@ function listingCardHTML(l){
         ${l.bedrooms?`<span>🛏 ${l.bedrooms}</span>`:''}
         ${l.bathrooms?`<span>🛁 ${l.bathrooms}</span>`:''}
         ${l.carPark?`<span>🚗 ${l.carPark}</span>`:''}
-        ${l.createdAt?`<span>📅 ${l.createdAt}</span>`:''}
+        ${(l.postedAt||l.createdAt)?.toDate?`<span>📅 ${(l.postedAt||l.createdAt).toDate().toLocaleDateString()}</span>`:''}
       </div>
       ${cobrokeBtn}
     </div>
