@@ -2216,6 +2216,13 @@ window.renderAdmin=async function(){
 // ===== MEDIA GROUP (admin-only: listings captured from Telegram/WhatsApp groups) =====
 let _mediaItems=[];
 let _allListings=[];
+function fromBadge(l){
+  if(l.source!=='media-group')return '<span style="color:var(--text-muted);font-size:12px">—</span>';
+  const plat=l.platform||(/@g\.us$/.test(l.srcGroupId||'')?'whatsapp':'telegram'); // infer for older docs
+  return plat==='whatsapp'
+    ?'<span class="badge" style="background:#25d366;color:#062">📱 WhatsApp</span>'
+    :'<span class="badge" style="background:#2aabee;color:#012">✈️ Telegram</span>';
+}
 window.drawAdminListings=function(){
   const from=document.getElementById('llFrom')?.value, to=document.getElementById('llTo')?.value;
   const fromT=from?new Date(from+'T00:00:00').getTime():null;
@@ -2233,7 +2240,7 @@ window.drawAdminListings=function(){
         <tr>
           <td style="cursor:pointer;color:var(--gold)" onclick="viewListing('${l.id}')">${l.title}</td>
           <td style="color:var(--text-muted);font-size:12px">${l.userName||'—'}</td>
-          <td>${l.source==='media-group'?'<span class="badge" style="background:#2aabee;color:#012">📥 media</span>':'<span style="color:var(--text-muted);font-size:12px">—</span>'}</td>
+          <td>${fromBadge(l)}</td>
           <td><span class="badge badge-${l.type}">${l.type}</span></td>
           <td style="color:var(--text-muted);font-size:12px">${l.category}</td>
           <td style="color:var(--text-muted);font-size:12px">${ld(l)?ld(l).toLocaleDateString():'—'}</td>
@@ -2321,7 +2328,7 @@ window.mediaApprove=async function(id){
     landSize:'',builtUp:'',bedrooms:g('m_bed'),bathrooms:g('m_bath'),carPark:'',
     description:desc,status:'published',images:[],
     userId:'media-group',userName:g('m_poster'),userPhone:g('m_phone'),teamId:'',
-    source:'media-group',postedAt:src.postedAt||null,tgMsgId:(src.tgMsgId??null),srcGroupId:(src.groupId||''),createdAt:serverTimestamp()
+    source:'media-group',platform:(src.platform||''),postedAt:src.postedAt||null,tgMsgId:(src.tgMsgId??null),srcGroupId:(src.groupId||''),createdAt:serverTimestamp()
   };
   if(mtype==='both'){
     // Appears in BOTH Browse tabs: one sale listing + one rent listing.
