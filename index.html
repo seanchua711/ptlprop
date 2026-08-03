@@ -541,6 +541,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="tab" onclick="showAdminTab(&#39;teams&#39;,this)">Teams</div>
       <div class="tab" onclick="showAdminTab(&#39;listings&#39;,this)">All Listings</div>
       <div class="tab" onclick="showAdminTab(&#39;mediaGroup&#39;,this)">📥 Media Group</div>
+      <div class="tab" onclick="showAdminTab(&#39;subsaleking&#39;,this)">🌐 SubSaleKing</div>
     </div>
     <div id="adminUsers">
     <div style="color:var(--green);text-align:center;padding:16px;background:rgba(61,190,142,.08);border-radius:8px;margin-bottom:20px;font-size:14px">✓ No pending approvals</div>
@@ -841,6 +842,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
     </table></div>
   </div>
     <div id="adminMediaGroup" style="display:none"></div>
+    <div id="adminSubsaleking" style="display:none"></div>
   </div>
   </div>
 </div>
@@ -1472,8 +1474,10 @@ function crmError(){
 
 function showAdminTab(tab,el){
   document.querySelectorAll('#page-admin .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
-  ['adminUsers','adminTeams','adminListings','adminMediaGroup'].forEach(id=>document.getElementById(id).style.display='none');
+  ['adminUsers','adminTeams','adminListings','adminMediaGroup','adminSubsaleking'].forEach(id=>document.getElementById(id).style.display='none');
   document.getElementById('admin'+tab.charAt(0).toUpperCase()+tab.slice(1)).style.display='';
+  // SubSaleKing pool is big — load it only when its tab is actually opened.
+  if(tab==='subsaleking'&&typeof renderSubsaleking==='function')renderSubsaleking();
 }
 function showTeamTab(tab,el){
   document.querySelectorAll('#page-team .tab').forEach(t=>t.classList.remove('active'));el.classList.add('active');
@@ -1531,6 +1535,7 @@ const USERS='ptlprop_users';
 const TEAMS='ptlprop_teams';
 const LISTINGS='ptlprop_listings';
 const MEDIA='ptlprop_media_listings';
+const SUBSALEKING='ptlprop_subsaleking';
 const WANTED='ptlprop_wanted';
 window.renderWanted=async function(){
   const search=(document.getElementById('wantedSearch')?.value||'').toLowerCase();
@@ -2260,6 +2265,65 @@ window.renderAdmin=async function(){
   try{ await renderMediaGroup(); }
   catch(e){ document.getElementById('adminMediaGroup').innerHTML=`<div style="color:var(--text-muted);padding:16px">Media Group unavailable: ${e.message}</div>`; }
 };
+
+// ===== SUBSALEKING (admin-only: external market pool, mirrored daily by the collector) =====
+// Loaded on demand (~3.5k docs) and filtered in memory; shows 60 rows at a time.
+let _skItems=null, _skShown=60;
+window.renderSubsaleking=async function(force){
+  const box=document.getElementById('adminSubsaleking');
+  if(_skItems&&!force){drawSk();return;}
+  box.innerHTML='<div style="color:var(--text-muted);padding:20px;text-align:center">Loading SubSaleKing pool…</div>';
+  try{
+    const snap=await getDocs(collection(db,SUBSALEKING));
+    _skItems=snap.docs.map(d=>({id:d.id,...d.data()}));
+  }catch(e){box.innerHTML=`<div style="color:var(--text-muted);padding:16px">Cannot load: ${e.message}</div>`;return;}
+  _skShown=60;drawSk();
+};
+window.skFilterChanged=function(){_skShown=60;drawSk();};
+window.skMore=function(){_skShown+=60;drawSk();};
+function drawSk(){
+  const box=document.getElementById('adminSubsaleking');
+  const q=(document.getElementById('skQ')?.value||'').toLowerCase().trim();
+  const type=document.getElementById('skType')?.value||'';
+  const cat=document.getElementById('skCat')?.value||'';
+  const maxP=parseFloat((document.getElementById('skMax')?.value||'').replace(/[^0-9.]/g,''))||0;
+  const num=p=>parseFloat(String(p||'').replace(/[^0-9.]/g,''))||0;
+  let list=(_skItems||[]).filter(l=>{
+    if(q&&!((l.title||'')+' '+(l.location||'')).toLowerCase().includes(q))return false;
+    if(type&&l.type!==type)return false;
+    if(cat&&l.category!==cat)return false;
+    if(maxP&&num(l.price)&&num(l.price)>maxP)return false;
+    return true;
+  });
+  const total=list.length; const rows=list.slice(0,_skShown);
+  box.innerHTML=`
+    <div style="color:var(--text-muted);font-size:13px;margin-bottom:12px">External market pool mirrored daily from subsaleking.com — used by the AI as <b>Step 4</b>. Read-only reference for co-broking; not shown in Browse.</div>
+    <div style="display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-bottom:14px">
+      <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">Search</div><input id="skQ" oninput="skFilterChanged()" placeholder="🔍 area or title" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;min-width:170px"/></div>
+      <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">Type</div><select id="skType" onchange="skFilterChanged()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px"><option value="">All</option><option value="sale">Sale</option><option value="rent">Rent</option></select></div>
+      <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">Category</div><select id="skCat" onchange="skFilterChanged()" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px"><option value="">All</option><option value="residential">Residential</option><option value="commercial">Commercial</option><option value="industrial">Industrial</option></select></div>
+      <div><div style="font-size:11px;color:var(--text-muted);margin-bottom:3px">Max price</div><input id="skMax" oninput="skFilterChanged()" placeholder="e.g. 1500000" style="background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px;width:120px"/></div>
+      <button class="btn btn-ghost btn-sm" onclick="document.getElementById('skQ').value='';document.getElementById('skType').value='';document.getElementById('skCat').value='';document.getElementById('skMax').value='';skFilterChanged()">Clear</button>
+      <span style="color:var(--text-muted);font-size:12px;align-self:center">Showing <b>${rows.length}</b> of <b>${total}</b> (pool ${_skItems?.length||0})</span>
+    </div>
+    <div class="admin-table-wrap"><table>
+      <thead><tr><th>Title</th><th>Location</th><th>Type</th><th>Category</th><th>Price</th><th>Built-up</th><th>Agent contact</th><th></th></tr></thead>
+      <tbody>${rows.length?rows.map(l=>`
+        <tr>
+          <td>${mesc(l.title||'')}</td>
+          <td style="color:var(--text-muted);font-size:12px">${mesc(l.location||'')}</td>
+          <td><span class="badge badge-${l.type}">${mesc(l.type||'')}</span></td>
+          <td style="color:var(--text-muted);font-size:12px">${mesc(l.category||'')}</td>
+          <td style="color:var(--gold)">RM ${mesc(String(l.price||'').replace(/^\s*RM\s*/i,''))}</td>
+          <td style="color:var(--text-muted);font-size:12px">${mesc(l.builtUp||'—')}</td>
+          <td style="font-size:12px">${l.contactNo?`${mesc(l.contactName||'-')}<br><a href="https://wa.me/6${mesc(String(l.contactNo).replace(/[^0-9]/g,''))}" target="_blank" style="color:#25d366">${mesc(l.contactNo)}</a>`:'<span style="color:var(--text-muted)">—</span>'}</td>
+          <td>${l.url?`<a class="btn btn-ghost btn-sm" href="${mesc(l.url)}" target="_blank">View</a>`:''}</td>
+        </tr>`).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">No matches</td></tr>'}
+      </tbody>
+    </table></div>
+    ${rows.length<total?`<div style="text-align:center;margin-top:14px"><button class="btn btn-ghost btn-sm" onclick="skMore()">Load more (${total-rows.length} left)</button></div>`:''}
+  `;
+}
 
 // ===== MEDIA GROUP (admin-only: listings captured from Telegram/WhatsApp groups) =====
 let _mediaItems=[];
