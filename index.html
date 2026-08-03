@@ -2324,7 +2324,8 @@ function mediaCard(m){
       <div style="flex:1;min-width:120px"><div style="font-size:10px;color:var(--text-muted);margin-bottom:3px">Category</div><select id="m_category_${id}" style="width:100%;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:6px 8px;font-size:13px"><option value="" ${!['residential','commercial','industrial'].includes(m.category)?'selected':''}>— pick —</option><option value="residential" ${m.category==='residential'?'selected':''}>Residential</option><option value="commercial" ${m.category==='commercial'?'selected':''}>Commercial</option><option value="industrial" ${m.category==='industrial'?'selected':''}>Industrial</option></select></div>
       ${inp('m_bed','Bedrooms',m.bedrooms)}
       ${inp('m_bath','Bathrooms',m.bathrooms)}
-      ${inp('m_size','Size',m.size)}
+      ${inp('m_builtup','Built-up',m.builtUp||m.size||'')}
+      ${inp('m_landsize','Land area',m.landSize||'')}
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
       ${inp('m_poster','Contact name',m.posterName)}
@@ -2343,14 +2344,12 @@ window.mediaApprove=async function(id){
   if(!title){toast('Title required to publish','var(--red)');return;}
   const mtype=g('m_type');
   if(mtype!=='sale'&&mtype!=='rent'&&mtype!=='both'){toast('Set Type to Sale / Rent / Both (needed to show in Browse)','var(--red)');return;}
-  const size=g('m_size');
-  let desc=g('m_desc');
-  if(size)desc=(desc?desc+'\n':'')+'Size: '+size;
+  const desc=g('m_desc');
   const src=_mediaItems.find(x=>x.id===id)||{};
   const salePrice=g('m_price'), rentPrice=g('m_rentprice');
   const base={
     title,category:g('m_category'),location:g('m_location'),
-    landSize:'',builtUp:'',bedrooms:g('m_bed'),bathrooms:g('m_bath'),carPark:'',
+    landSize:g('m_landsize'),builtUp:g('m_builtup'),bedrooms:g('m_bed'),bathrooms:g('m_bath'),carPark:'',
     description:desc,status:'published',images:[],
     userId:'media-group',userName:g('m_poster'),userPhone:g('m_phone'),teamId:'',
     source:'media-group',platform:(src.platform||''),groupName:(src.groupName||''),postedAt:src.postedAt||null,tgMsgId:(src.tgMsgId??null),srcGroupId:(src.groupId||''),createdAt:serverTimestamp()
