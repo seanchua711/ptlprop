@@ -471,7 +471,15 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <button class="btn btn-sm" style="background:rgba(124,58,237,.12);color:#a78bfa;border:1px solid rgba(124,58,237,.3)" onclick="openContacts()">👥 Contacts</button>
         <button class="btn btn-sm" style="background:rgba(37,211,102,.12);color:#25d366;border:1px solid rgba(37,211,102,.3)" onclick="openFollowupModal()">⏰ Follow-up</button>
         <button class="btn btn-ghost btn-sm" onclick="clearAiChat()">🗑 Clear</button>
-        <button class="btn btn-ghost btn-sm" id="aiMediaBtn" style="display:none" title="开启后按 Step 顺序找货：Step1 你的+co-broke → Step2 平台其他 agent → Step3 Media 采集库（都按客户地区/要求筛）" onclick="toggleMediaFallback()">📥 扩展货源</button>
+        <div style="position:relative;display:inline-block" id="srcWrap">
+          <button class="btn btn-ghost btn-sm" id="aiMediaBtn" style="display:none" title="选 AI 找货用哪些货源层（按 Step 顺序兜底，都按客户地区/要求筛）" onclick="toggleSrcMenu(event)">📥 货源</button>
+          <div id="srcMenu" style="display:none;position:absolute;top:112%;right:0;z-index:60;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:11px 13px;min-width:230px;box-shadow:0 8px 26px rgba(0,0,0,.45)">
+            <div style="font-size:11px;color:var(--text-muted);margin-bottom:9px;line-height:1.5">AI 找货源用哪些层（按 Step 顺序，靠前没匹配才用后面的）：</div>
+            <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--text);padding:5px 0;cursor:pointer"><input type="checkbox" id="srcS1" onchange="setSrcStep('s1',this.checked)" style="margin-top:2px"/> <span><b>Step 1</b>｜我的 + co-broke</span></label>
+            <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--text);padding:5px 0;cursor:pointer"><input type="checkbox" id="srcS2" onchange="setSrcStep('s2',this.checked)" style="margin-top:2px"/> <span><b>Step 2</b>｜平台其他 agent 的房源</span></label>
+            <label style="display:flex;gap:9px;align-items:flex-start;font-size:13px;color:var(--text);padding:5px 0;cursor:pointer"><input type="checkbox" id="srcS3" onchange="setSrcStep('s3',this.checked)" style="margin-top:2px"/> <span><b>Step 3</b>｜Media 采集库</span></label>
+          </div>
+        </div>
         <button class="btn btn-ghost btn-sm" id="aiInstrBtn" style="display:none" onclick="openAiInstructions()">⚙️ Instructions</button>
       </div>
     </div>
@@ -907,29 +915,32 @@ function aiAppend(role,text,cls){
   if(cls==='pending'){b.id='aiPending';b.style.opacity='.6';}
   b.textContent=text;wrap.appendChild(b);box.appendChild(wrap);box.scrollTop=box.scrollHeight;
 }
-let _mediaFb=false;
-function updateMediaBtn(){const b=document.getElementById('aiMediaBtn');if(!b)return;
-  b.innerHTML='📥 扩展货源: '+(_mediaFb?'<b style="color:var(--green)">ON</b>':'OFF');
-  b.style.background=_mediaFb?'rgba(42,171,238,.15)':'';b.style.color=_mediaFb?'#2aabee':'';
+let _srcSteps=['s1'];
+function updateSrcUI(){
+  ['s1','s2','s3'].forEach(s=>{const el=document.getElementById('src'+s.toUpperCase());if(el)el.checked=_srcSteps.includes(s);});
+  const b=document.getElementById('aiMediaBtn');if(b){b.innerHTML='📥 货源 ('+_srcSteps.length+'/3)';b.style.background=_srcSteps.length>1?'rgba(42,171,238,.15)':'';b.style.color=_srcSteps.length>1?'#2aabee':'';}
 }
-window.loadMediaFallback=async function(){
+window.toggleSrcMenu=function(ev){ev&&ev.stopPropagation();const m=document.getElementById('srcMenu');if(m)m.style.display=m.style.display==='none'?'block':'none';};
+window.loadSourceSteps=async function(){
   try{const tok=await aiIdToken();if(!tok)return;
-    const r=await fetch(AI_API+'/media-fallback',{headers:{'Authorization':'Bearer '+tok}}).then(r=>r.json());
-    _mediaFb=!!r.enabled;updateMediaBtn();
+    const r=await fetch(AI_API+'/source-steps',{headers:{'Authorization':'Bearer '+tok}}).then(r=>r.json());
+    if(Array.isArray(r.steps))_srcSteps=r.steps; updateSrcUI();
   }catch(e){}
 };
-window.toggleMediaFallback=async function(){
+window.setSrcStep=async function(step,checked){
+  const set=new Set(_srcSteps); checked?set.add(step):set.delete(step);
+  let steps=[...set]; if(!steps.length){steps=['s1'];}
   try{const tok=await aiIdToken();if(!tok)return;
-    const r=await fetch(AI_API+'/media-fallback',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({enabled:!_mediaFb})}).then(r=>r.json());
-    _mediaFb=!!r.enabled;updateMediaBtn();
-    toast(_mediaFb?'扩展货源已开启（Step1→2→3 分层找货）':'扩展货源已关闭（只用你的+co-broke）',_mediaFb?'var(--green)':'var(--text-muted)');
-  }catch(e){toast('操作失败','var(--red)');}
+    const r=await fetch(AI_API+'/source-steps',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+tok},body:JSON.stringify({steps})}).then(r=>r.json());
+    if(Array.isArray(r.steps))_srcSteps=r.steps; updateSrcUI();
+    toast('货源已更新: '+_srcSteps.map(s=>s.toUpperCase()).join(' + '),'var(--green)');
+  }catch(e){toast('保存失败','var(--red)');}
 };
 window.renderAiAssist=function(){
   const showTools=(currentUser?.role==='agentassist'||currentUser?.role==='admin');
   document.getElementById('aiInstrBtn').style.display=showTools?'inline-flex':'none';
   document.getElementById('aiMediaBtn').style.display=showTools?'inline-flex':'none';
-  if(showTools)loadMediaFallback();
+  if(showTools)loadSourceSteps();
   const box=document.getElementById('aiChatBox');
   if(!aiHistory.length&&box&&!box.children.length){
     aiAppend('ai','👋 Hi, I\'m the PTL-PROP AI Assistant. I know every published listing on the platform and can help you:\n• Match properties to client needs (budget/location/type)\n• Compare listings & write listing descriptions\n• Answer questions about these listings\n\nJust ask me anything!');
@@ -1493,6 +1504,7 @@ window.onload=()=>{
   setTimeout(()=>{if(typeof window._fbReady==='function')window._fbReady()},300);
 };
 document.querySelectorAll('.modal-overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')});});
+document.addEventListener('click',e=>{const m=document.getElementById('srcMenu');if(m&&m.style.display==='block'&&!e.target.closest('#srcWrap'))m.style.display='none';});
 </script>
 
 <!-- FIREBASE -->
