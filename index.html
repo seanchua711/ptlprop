@@ -1945,12 +1945,24 @@ function compressImage(dataUrl,maxWidth,quality){
 }
 
 // ===== VIEW LISTING =====
+window.listingRemovePhoto=async function(id,ix){
+  if(!confirm('Delete this photo from the listing?'))return;
+  const snap=await getDoc(doc(db,LISTINGS,id));
+  if(!snap.exists())return;
+  if(!(currentUser?.role==='admin'||snap.data().userId===currentUser?.uid)){toast('Not allowed','var(--red)');return;}
+  const imgs=(snap.data().images||[]).filter(Boolean);
+  imgs.splice(ix,1);
+  await updateDoc(doc(db,LISTINGS,id),{images:imgs});
+  toast('Photo removed','var(--green)');
+  viewListing(id);
+};
 window.viewListing=async function(id){
   const snap=await getDoc(doc(db,LISTINGS,id));
   if(!snap.exists())return;
   const l={id:snap.id,...snap.data()};
   const imgs=(l.images||[]).filter(Boolean);
-  const imgGrid=imgs.length?`<div class="detail-img-grid">${imgs.map(i=>`<img src="${i}">`).join('')}</div>`:`<div style="height:160px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:24px">🏠</div>`;
+  const canEditImgs=currentUser?.role==='admin'||(currentUser&&l.userId===currentUser.uid);
+  const imgGrid=imgs.length?`<div class="detail-img-grid">${imgs.map((i,ix)=>`<div style="position:relative">${canEditImgs?`<span onclick="listingRemovePhoto('${l.id}',${ix})" title="Delete photo" style="position:absolute;top:6px;right:6px;width:24px;height:24px;line-height:22px;text-align:center;border-radius:50%;background:rgba(220,50,50,.92);color:#fff;cursor:pointer;font-size:15px;font-weight:700;z-index:2">×</span>`:''}<img src="${i}" style="width:100%;height:100%;object-fit:cover;border-radius:6px"></div>`).join('')}</div>`:`<div style="height:160px;background:var(--surface2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:48px;margin-bottom:24px">🏠</div>`;
   document.getElementById('detailModalTitle').textContent=l.title;
   document.getElementById('detailModalBody').innerHTML=`
     ${imgGrid}
