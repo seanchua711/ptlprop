@@ -2296,11 +2296,17 @@ window.renderAdmin=async function(){
     </div>`:'<div style="color:var(--green);text-align:center;padding:16px;background:rgba(61,190,142,.08);border-radius:8px;margin-bottom:20px;font-size:14px">✓ No pending approvals</div>'}
     <div style="font-size:12px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-bottom:10px;font-weight:600">All Members (${nonPending.length})</div>
     <div class="admin-table-wrap"><table>
-      <thead><tr><th>Name</th><th>Email</th><th>Team</th><th>Role</th><th>Status</th><th>Change Role</th><th>Actions</th></tr></thead>
+      <thead><tr><th>Name</th><th>Email</th><th>Phone (WhatsApp)</th><th>Team</th><th>Role</th><th>Status</th><th>Change Role</th><th>Actions</th></tr></thead>
       <tbody>${nonPending.length?nonPending.map(u=>`
         <tr>
           <td>${u.name}</td>
           <td style="color:var(--text-muted);font-size:12px">${u.email}</td>
+          <td>
+            <div style="display:flex;gap:4px;align-items:center">
+              <input id="uphone_${u.uid}" value="${(u.phone||'').replace(/"/g,'&quot;')}" placeholder="0123456789" style="width:120px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:6px;padding:4px 6px;font-size:12px"/>
+              <button class="btn btn-gold btn-sm" onclick="adminSavePhone('${u.uid}')">Save</button>
+            </div>
+          </td>
           <td style="color:var(--text-muted);font-size:12px">${u.teamName||u.teamCode||'—'}</td>
           <td><span class="badge badge-${u.role||'user'}">${u.role||'user'}</span></td>
           <td><span class="badge badge-${u.status}">${u.status}</span></td>
@@ -2322,7 +2328,7 @@ window.renderAdmin=async function(){
             <button class="btn btn-ghost btn-sm" onclick="resetUserPassword('${u.email}')">Reset PW</button>
             <button class="btn btn-danger btn-sm" onclick="adminDeleteUser('${u.uid}')">Delete</button>
           </td>
-        </tr>`).join(''):'<tr><td colspan="7" style="text-align:center;color:var(--text-muted);padding:24px">No members yet</td></tr>'}
+        </tr>`).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">No members yet</td></tr>'}
       </tbody>
     </table></div>
   `;
@@ -2608,6 +2614,18 @@ window.adminDeleteUser=async function(uid){
     if(r.success){toast('User deleted','var(--red)');renderAdmin();}
     else alert('❌ '+(r.error||'Delete failed'));
   }catch(e){alert('❌ Connection failed, please try again');}
+};
+// Admin edits a member's WhatsApp number. Also stamps it onto that agent's
+// existing listings — co-broke messaging and the WhatsApp button read
+// listing.userPhone, so updating only the profile would leave them on the old number.
+window.adminSavePhone=async function(uid){
+  const el=document.getElementById('uphone_'+uid); if(!el)return;
+  const phone=(el.value||'').trim();
+  await updateDoc(doc(db,USERS,uid),{phone});
+  const snap=await getDocs(query(collection(db,LISTINGS),where('userId','==',uid)));
+  for(const d of snap.docs){ await updateDoc(doc(db,LISTINGS,d.id),{userPhone:phone}); }
+  aiClearCache('listings',uid); // so the AI/WhatsApp bot picks up the new number now
+  toast(`Phone saved (${snap.size} listing${snap.size===1?'':'s'} updated)`,'var(--green)');
 };
 window.adminChangeRole=async function(uid, email){
   const role=document.getElementById('chrole_'+uid)?.value;
