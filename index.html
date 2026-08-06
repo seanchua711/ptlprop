@@ -2449,8 +2449,8 @@ function fromBadge(l){
   if(l.source!=='media-group')return '<span style="color:var(--text-muted);font-size:12px">—</span>';
   const plat=l.platform||(/@g\.us$/.test(l.srcGroupId||'')?'whatsapp':'telegram'); // infer for older docs
   return plat==='whatsapp'
-    ?'<span class="badge" style="background:#25d366;color:#062">📱 WhatsApp</span>'
-    :'<span class="badge" style="background:#2aabee;color:#012">✈️ Telegram</span>';
+    ?'<span class="badge" style="background:#25d366;color:#062">📱 WS</span>'
+    :'<span class="badge" style="background:#2aabee;color:#012">✈️ TL</span>';
 }
 window.drawAdminListings=function(){
   const from=document.getElementById('llFrom')?.value, to=document.getElementById('llTo')?.value;
