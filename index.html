@@ -600,7 +600,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       <div class="tab" onclick="showAdminTab(&#39;teams&#39;,this)">Teams</div>
       <div class="tab" onclick="showAdminTab(&#39;listings&#39;,this)">All Listings</div>
       <div class="tab" onclick="showAdminTab(&#39;mediaGroup&#39;,this)">📥 Media Group</div>
-      <div class="tab" onclick="showAdminTab(&#39;subsaleking&#39;,this)">🌐 SubSaleKing</div>
+      <div class="tab" onclick="showAdminTab(&#39;subsaleking&#39;,this)">🌐 SubSale</div>
     </div>
     <div id="adminUsers">
     <div style="color:var(--green);text-align:center;padding:16px;background:rgba(61,190,142,.08);border-radius:8px;margin-bottom:20px;font-size:14px">✓ No pending approvals</div>
@@ -2373,7 +2373,7 @@ let _skItems=null, _skShown=60;
 window.renderSubsaleking=async function(force){
   const box=document.getElementById('adminSubsaleking');
   if(_skItems&&!force){ if(document.getElementById('skBody'))drawSkRows(); else drawSk(); return; }
-  box.innerHTML='<div style="color:var(--text-muted);padding:20px;text-align:center">Loading SubSaleKing pool…</div>';
+  box.innerHTML='<div style="color:var(--text-muted);padding:20px;text-align:center">Loading SubSale pool…</div>';
   try{
     const snap=await getDocs(collection(db,SUBSALEKING));
     _skItems=snap.docs.map(d=>({id:d.id,...d.data()}));
