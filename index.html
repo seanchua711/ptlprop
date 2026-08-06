@@ -2305,7 +2305,9 @@ window.teamDelete=async function(uid){
 window.renderAdmin=async function(){
   const [usersSnap,teamsSnap,listSnap]=await Promise.all([getDocs(collection(db,USERS)),getDocs(collection(db,TEAMS)),getDocs(collection(db,LISTINGS))]);
   // Show ALL users except current admin - including pending (who may have role=user or undefined)
-  const users=usersSnap.docs.map(d=>{return {uid:d.id,...d.data()}}).filter(u=>u.uid!==currentUser.uid);
+  const allUsers=usersSnap.docs.map(d=>{return {uid:d.id,...d.data()}});
+  const users=allUsers.filter(u=>u.uid!==currentUser.uid);
+  const me=allUsers.find(u=>u.uid===currentUser.uid);   // 自己也要能填电话（Step 0 的通知就发到这个号码）
   const teams=teamsSnap.docs.map(d=>{return {id:d.id,...d.data()}}).filter(t=>t.id!=='admin');
   const listings=listSnap.docs.map(d=>{return {id:d.id,...d.data()}});
   const pending=users.filter(u=>u.status==='pending');
@@ -2316,7 +2318,7 @@ window.renderAdmin=async function(){
     <div class="stat-card"><div class="stat-value">${listings.filter(l=>l.status==='published').length}</div><div class="stat-label">Published</div></div>
   `;
   // Users tab - pending first, then all others
-  const nonPending=users.filter(u=>u.status!=='pending');
+  const nonPending=[...(me?[{...me,_self:true}]:[]),...users.filter(u=>u.status!=='pending')];
   document.getElementById('adminUsers').innerHTML=`
     ${pending.length?`
     <div style="margin-bottom:20px">
@@ -2343,7 +2345,7 @@ window.renderAdmin=async function(){
       <thead><tr><th>Name</th><th>Email</th><th>Phone (WhatsApp)</th><th>Team</th><th>Role</th><th>Status</th><th>Change Role</th><th>Actions</th></tr></thead>
       <tbody>${nonPending.length?nonPending.map(u=>`
         <tr>
-          <td>${u.name}</td>
+          <td>${u.name}${u._self?' <span style="font-size:10px;color:var(--gold)">(you)</span>':''}</td>
           <td style="color:var(--text-muted);font-size:12px">${u.email}</td>
           <td>
             <div style="display:flex;gap:4px;align-items:center">
@@ -2354,7 +2356,7 @@ window.renderAdmin=async function(){
           <td style="color:var(--text-muted);font-size:12px">${u.teamName||u.teamCode||'—'}</td>
           <td><span class="badge badge-${u.role||'user'}">${u.role||'user'}</span></td>
           <td><span class="badge badge-${u.status}">${u.status}</span></td>
-          <td>
+          <td>${u._self?'<span style="color:var(--text-muted);font-size:12px">—</span>':`
             <div style="display:flex;gap:4px;align-items:center">
               <select class="form-select" id="chrole_${u.uid}" style="padding:4px 8px;font-size:12px;width:auto">
                 <option value="user" ${(u.role||'user')==='user'?'selected':''}>User</option>
@@ -2364,13 +2366,14 @@ window.renderAdmin=async function(){
                 <option value="admin" ${u.role==='admin'?'selected':''}>Admin</option>
               </select>
               <button class="btn btn-gold btn-sm" onclick="adminChangeRole('${u.uid}','${u.email}')">Save</button>
-            </div>
+            </div>`}
           </td>
           <td style="display:flex;gap:4px;flex-wrap:wrap">
+            ${u._self?'<span style="color:var(--text-muted);font-size:12px">—</span>':`
             ${u.status==='approved'?`<button class="btn btn-ghost btn-sm" onclick="adminSuspend('${u.uid}')">Suspend</button>`:''}
             ${u.status!=='approved'?`<button class="btn btn-green btn-sm" onclick="adminReinstate('${u.uid}')">Reinstate</button>`:''}
             <button class="btn btn-ghost btn-sm" onclick="resetUserPassword('${u.email}')">Reset PW</button>
-            <button class="btn btn-danger btn-sm" onclick="adminDeleteUser('${u.uid}')">Delete</button>
+            <button class="btn btn-danger btn-sm" onclick="adminDeleteUser('${u.uid}')">Delete</button>`}
           </td>
         </tr>`).join(''):'<tr><td colspan="8" style="text-align:center;color:var(--text-muted);padding:24px">No members yet</td></tr>'}
       </tbody>
