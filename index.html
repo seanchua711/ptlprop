@@ -530,13 +530,10 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
       <div style="border:1px solid var(--border);border-left:3px solid #a78bfa;border-radius:10px;padding:12px;margin-bottom:14px;background:var(--surface2)">
         <div style="font-size:13px;font-weight:700;color:var(--text)">Step 0 · A customer starts asking about a listing</div>
-        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">1️⃣ Listing posted on PTL-PROP ➡️ to its <b>advertising agent</b> — one-way, no reply needed.</div>
-        <textarea id="cfNotifyAdAgent" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
-        <div id="cfLangs_notifyAdAgent"></div>
-        <div style="font-size:11px;color:var(--text-muted);margin:12px 0 6px">2️⃣ Listing from <b>Media Group</b> or <b>SubSale</b> (no PTL-PROP agent behind it) ➡️ to <b>you</b>, on your own phone in Users — sent as written.</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">➡️ To <b>you</b> — you are the advertising agent: the customer messaged your AI number because they saw <i>your</i> ad. Goes to your own phone in Admin › Users. Sent as written.</div>
         <textarea id="cfNotifyUser" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
-        <div style="font-size:10px;color:var(--text-muted);margin-top:5px">Placeholders: {listing} {source} {customer}</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:9px">Fires once per listing per customer — a workflow only moves forward. A different listing fires Step 0 again.</div>
+        <div style="font-size:10px;color:var(--text-muted);margin-top:5px">Placeholders: {listing} {source} {customer} — {source} says where the listing came from (your own listing / another PTL-PROP agent / Media Group / SubSale).</div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:9px">Fires once per listing per customer — a workflow only moves forward. A different listing fires Step 0 again. The listing’s owner is contacted in Step 1, not here.</div>
       </div>
 
       <div style="border:1px solid var(--border);border-left:3px solid #e0a92e;border-radius:10px;padding:12px;margin-bottom:14px;background:var(--surface2)">
@@ -1394,7 +1391,6 @@ async function _cbFs(){
 function canCobroke(){return currentUser&&(currentUser.role==='agentassist'||currentUser.role==='admin');}
 // ===== CO-BROKE WORKFLOW (editable AI message per step; stored in ptlprop_cobroke_workflow) =====
 const CF_DEFAULTS={
-  notifyAdAgent:'Hi {owner}, this is {you} from PTL-PROP. Just to let you know — a customer is asking about your listing "{listing}". 🙏',
   notifyUser:'🔔 A customer is asking about "{listing}" ({source}). Customer: {customer}.',
   requestOwner:'Hi {owner}, this is {you} from PTL-PROP. I\'d like to co-broke your listing "{listing}" — is that OK with you? 🙏',
   askOwner:'Hi {owner}, I\'m {you} from PTL-PROP. I have a customer looking for {criteria}. Is your listing "{listing}" still available for co-broke? 🙏',
@@ -1404,11 +1400,11 @@ const CF_DEFAULTS={
   notAvailCust:'So sorry — "{listing}" has just been taken. Let me find you a few other great options, give me a moment. 🙏',
   notifyDeclined:'⚠️ {owner} says "{listing}" is NOT available (customer: {customer}). Please follow up.',
 };
-const CF_MAP={cfNotifyAdAgent:'notifyAdAgent',cfNotifyUser:'notifyUser',cfRequestOwner:'requestOwner',cfAskOwner:'askOwner',cfTellCustomer:'tellCustomer',cfAvailCust:'availCust',cfNotifyConfirmed:'notifyConfirmed',cfNotAvailCust:'notAvailCust',cfNotifyDeclined:'notifyDeclined'};
+const CF_MAP={cfNotifyUser:'notifyUser',cfRequestOwner:'requestOwner',cfAskOwner:'askOwner',cfTellCustomer:'tellCustomer',cfAvailCust:'availCust',cfNotifyConfirmed:'notifyConfirmed',cfNotAvailCust:'notAvailCust',cfNotifyDeclined:'notifyDeclined'};
 // 每条对外信息可勾选允许的语言。客户/owner 用的语言在允许清单里 → 就用那个语言发；
 // 不在 → 用勾选的第一个。发给你自己的通知不需要（照写的原样发）。
-const CF_LANG_KEYS=['notifyAdAgent','requestOwner','askOwner','tellCustomer','availCust','notAvailCust'];
-const CF_LANG_DEFAULTS={notifyAdAgent:['en'],requestOwner:['en'],askOwner:['en'],tellCustomer:['en','zh','ms'],availCust:['en','zh','ms'],notAvailCust:['en','zh','ms']};
+const CF_LANG_KEYS=['requestOwner','askOwner','tellCustomer','availCust','notAvailCust'];
+const CF_LANG_DEFAULTS={requestOwner:['en'],askOwner:['en'],tellCustomer:['en','zh','ms'],availCust:['en','zh','ms'],notAvailCust:['en','zh','ms']};
 const CF_LANG_LABELS=[['en','English'],['zh','中文'],['ms','BM']];
 function cfRenderLangs(key,on){
   const box=document.getElementById('cfLangs_'+key); if(!box)return;
