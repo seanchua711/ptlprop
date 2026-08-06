@@ -508,51 +508,58 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
 <!-- CO-BROKE WORKFLOW MODAL (editable AI message per step) -->
 <div id="cobrokeFlowModal" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.6);align-items:center;justify-content:center;padding:20px">
-  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:560px;max-height:88vh;display:flex;flex-direction:column">
+  <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;width:100%;max-width:600px;max-height:88vh;display:flex;flex-direction:column">
     <div style="padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
       <div><div style="font-size:16px;font-weight:700;color:var(--text)">🔁 Co-broke Workflow</div>
-        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">What the AI says at each step. Placeholders: <b>{owner} {you} {listing} {criteria} {customer}</b></div></div>
+        <div style="font-size:11px;color:var(--text-muted);margin-top:2px">The AI follows these steps exactly. Placeholders: <b>{owner} {you} {listing} {criteria} {customer}</b></div></div>
       <button class="btn btn-ghost btn-sm" onclick="document.getElementById('cobrokeFlowModal').style.display='none'">Close</button>
     </div>
     <div style="flex:1;overflow-y:auto;padding:16px 18px">
 
+      <div style="border:1px solid rgba(124,58,237,.4);border-radius:10px;padding:12px;margin-bottom:14px;background:rgba(124,58,237,.08)">
+        <div style="font-size:13px;font-weight:700;color:#a78bfa">⚙️ Instruction (applies to every message)</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 8px">Global rules used when a message is delivered in another language. e.g. keep location, area and property names in English.</div>
+        <textarea id="cfInstruction" rows="2" placeholder="e.g. Always keep location, area and property names in English." style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
+      </div>
+
       <div style="border:1px solid rgba(245,158,11,.4);border-radius:10px;padding:12px;margin-bottom:14px;background:rgba(245,158,11,.08)">
         <div style="font-size:13px;font-weight:700;color:#e0a92e">🔔 Notify number (WhatsApp)</div>
-        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 8px">The "(notifies you)" messages in Step 3 & 4 are sent to this WhatsApp number. Leave empty to turn co-broke notifications off.</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 8px">The "notifies you" messages in Step 2 are sent to this WhatsApp number. Leave empty to turn co-broke notifications off.</div>
         <input id="cfNotifyPhone" type="tel" placeholder="e.g. 0123456789" style="width:100%;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:14px"/>
       </div>
 
       <div style="border:1px solid var(--border);border-left:3px solid #a78bfa;border-radius:10px;padding:12px;margin-bottom:14px;background:var(--surface2)">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 0 · You add a listing to your co-broke list → ask the owner to confirm</div>
-        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 8px">Sent to the listing's owner agent when you 🤝 Co-broke it, to confirm they're OK with the co-broke.</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 0 · You add a listing to your co-broke list</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">➡️ To the <b>listing owner</b> — asking if they are OK with the co-broke.</div>
         <textarea id="cfRequestOwner" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
+        <div id="cfLangs_requestOwner"></div>
       </div>
 
-      <div style="border:1px solid var(--border);border-left:3px solid #e0a92e;border-radius:10px;padding:12px;margin-bottom:12px;background:var(--surface2)">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 1 · Customer picks a co-broke listing → AI asks the owner</div>
-        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 8px">Sent to the listing's owner agent (from your WhatsApp).</div>
-        <textarea id="cfAskOwner" rows="3" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
-      </div>
-
-      <div style="border:1px solid var(--border);border-left:3px solid #25d366;border-radius:10px;padding:12px;margin-bottom:12px;background:var(--surface2)">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 2 · At the same time → AI tells the customer</div>
-        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 8px">So the customer knows you're checking availability.</div>
+      <div style="border:1px solid var(--border);border-left:3px solid #e0a92e;border-radius:10px;padding:12px;margin-bottom:14px;background:var(--surface2)">
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 1 · Customer asks to view → send 2 messages</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">1️⃣ ➡️ To the <b>customer</b> — so they know you are checking.</div>
         <textarea id="cfTellCustomer" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
+        <div id="cfLangs_tellCustomer"></div>
+        <div style="font-size:11px;color:var(--text-muted);margin:12px 0 6px">2️⃣ ➡️ To the <b>listing owner</b> — asking if it is still available.</div>
+        <textarea id="cfAskOwner" rows="3" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
+        <div id="cfLangs_askOwner"></div>
       </div>
 
       <div style="border:1px solid var(--border);border-left:3px solid #25d366;border-radius:10px;padding:12px;margin-bottom:12px;background:var(--surface2)">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 3 · Owner says AVAILABLE ✅</div>
-        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">AI replies to the customer:</div>
-        <textarea id="cfAvailCust" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit;margin-bottom:8px"></textarea>
-        <div style="font-size:11px;color:var(--text-muted);margin:0 0 6px">And notifies you:</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 2a · Owner replies AVAILABLE ✅</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">➡️ To the <b>customer</b>:</div>
+        <textarea id="cfAvailCust" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
+        <div id="cfLangs_availCust"></div>
+        <div style="font-size:11px;color:var(--text-muted);margin:12px 0 6px">➡️ To <b>you</b> (notify number) — sent as written:</div>
         <textarea id="cfNotifyConfirmed" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
       </div>
 
       <div style="border:1px solid var(--border);border-left:3px solid #ef4444;border-radius:10px;padding:12px;margin-bottom:12px;background:var(--surface2)">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 4 · Owner says NOT available ⚠️ (sold / rented / 3rd party)</div>
-        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">AI replies to the customer:</div>
-        <textarea id="cfNotAvailCust" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit;margin-bottom:8px"></textarea>
-        <div style="font-size:11px;color:var(--text-muted);margin:0 0 6px">And notifies you:</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 2b · Owner replies NOT available ⚠️ (sold / rented / 3rd party)</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">➡️ To the <b>customer</b>:</div>
+        <textarea id="cfNotAvailCust" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
+        <div id="cfLangs_notAvailCust"></div>
+        <div style="font-size:11px;color:var(--text-muted);margin:12px 0 6px">➡️ To <b>you</b> (notify number) — sent as written:</div>
         <textarea id="cfNotifyDeclined" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
       </div>
 
@@ -1385,7 +1392,29 @@ const CF_DEFAULTS={
   notifyDeclined:'⚠️ {owner} says "{listing}" is NOT available (customer: {customer}). Please follow up.',
 };
 const CF_MAP={cfRequestOwner:'requestOwner',cfAskOwner:'askOwner',cfTellCustomer:'tellCustomer',cfAvailCust:'availCust',cfNotifyConfirmed:'notifyConfirmed',cfNotAvailCust:'notAvailCust',cfNotifyDeclined:'notifyDeclined'};
-function fillCobrokeFlow(d){for(const id in CF_MAP){const el=document.getElementById(id);if(el)el.value=d[CF_MAP[id]]||'';}const np=document.getElementById('cfNotifyPhone');if(np)np.value=d.notifyPhone||'';}
+// 每条对外信息可勾选允许的语言。客户/owner 用的语言在允许清单里 → 就用那个语言发；
+// 不在 → 用勾选的第一个。发给你自己的通知不需要（照写的原样发）。
+const CF_LANG_KEYS=['requestOwner','askOwner','tellCustomer','availCust','notAvailCust'];
+const CF_LANG_DEFAULTS={requestOwner:['en'],askOwner:['en'],tellCustomer:['en','zh','ms'],availCust:['en','zh','ms'],notAvailCust:['en','zh','ms']};
+const CF_LANG_LABELS=[['en','English'],['zh','中文'],['ms','BM']];
+function cfRenderLangs(key,on){
+  const box=document.getElementById('cfLangs_'+key); if(!box)return;
+  box.innerHTML='<div style="display:flex;gap:14px;align-items:center;margin-top:7px;font-size:11px;color:var(--text-muted)">'
+    +'<span>Send in:</span>'
+    +CF_LANG_LABELS.map(([v,l])=>`<label style="display:flex;gap:4px;align-items:center;cursor:pointer"><input type="checkbox" id="cfL_${key}_${v}" ${on.includes(v)?'checked':''}/> ${l}</label>`).join('')
+    +'</div>';
+}
+function cfGetLangs(key){
+  const on=CF_LANG_LABELS.map(([v])=>v).filter(v=>document.getElementById('cfL_'+key+'_'+v)?.checked);
+  return on.length?on:['en'];   // 一个都没勾 → 至少发英文
+}
+function fillCobrokeFlow(d){
+  for(const id in CF_MAP){const el=document.getElementById(id);if(el)el.value=d[CF_MAP[id]]||'';}
+  const np=document.getElementById('cfNotifyPhone');if(np)np.value=d.notifyPhone||'';
+  const ins=document.getElementById('cfInstruction');if(ins)ins.value=d.instruction||'';
+  const langs=d.langs||{};
+  CF_LANG_KEYS.forEach(k=>cfRenderLangs(k, Array.isArray(langs[k])&&langs[k].length?langs[k]:CF_LANG_DEFAULTS[k]));
+}
 window.openCobrokeFlow=async function(){
   fillCobrokeFlow(CF_DEFAULTS);
   document.getElementById('cobrokeFlowModal').style.display='flex';
@@ -1397,6 +1426,8 @@ window.saveCobrokeFlow=async function(){
   const data={agentUid:currentUser.uid,updatedAt:Date.now()};
   for(const id in CF_MAP)data[CF_MAP[id]]=g(id);
   data.notifyPhone=(document.getElementById('cfNotifyPhone')?.value||'').replace(/[^0-9+]/g,'').slice(0,20);
+  data.instruction=g('cfInstruction').slice(0,1000);
+  data.langs={}; CF_LANG_KEYS.forEach(k=>{data.langs[k]=cfGetLangs(k);});
   try{const {f,db}=await _cbFs();await f.setDoc(f.doc(db,'ptlprop_cobroke_workflow',currentUser.uid),data,{merge:true});toast('Co-broke workflow saved','var(--green)');document.getElementById('cobrokeFlowModal').style.display='none';}
   catch(e){console.error('saveCobrokeFlow',e);toast('Failed to save: '+(e.code||e.message||'unknown'),'var(--red)');}
 };
