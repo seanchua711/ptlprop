@@ -530,7 +530,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
       <div style="border:1px solid var(--border);border-left:3px solid #a78bfa;border-radius:10px;padding:12px;margin-bottom:14px;background:var(--surface2)">
         <div style="font-size:13px;font-weight:700;color:var(--text)">Step 0 · A customer starts asking about a listing</div>
-        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">➡️ To <b>you</b> — you are the advertising agent: the customer messaged your AI number because they saw <i>your</i> ad. Goes to your own phone in Admin › Users. Sent as written.</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">➡️ To <b>you</b> — <b>you are the advertising agent</b> (the user running this system), <b>not</b> the listing owner. The customer messaged your AI number because they saw <i>your</i> ad. Goes to your own phone in Admin › Users. Sent as written.</div>
         <textarea id="cfNotifyUser" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
         <div style="font-size:10px;color:var(--text-muted);margin-top:5px">Placeholders: {listing} {source} {customer} — {source} says where the listing came from (your own listing / another PTL-PROP agent / Media Group / SubSale).</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:9px">Fires once per listing per customer — a workflow only moves forward. A different listing fires Step 0 again. The listing’s owner is contacted in Step 1, not here.</div>
@@ -541,13 +541,13 @@ tr:hover td{background:rgba(255,255,255,.02)}
         <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">1️⃣ ➡️ To the <b>customer</b> — so they know you are checking.</div>
         <textarea id="cfTellCustomer" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
         <div id="cfLangs_tellCustomer"></div>
-        <div style="font-size:11px;color:var(--text-muted);margin:12px 0 6px">2️⃣ ➡️ To the <b>advertising agent</b> — asking if it is still available.</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:12px 0 6px">2️⃣ ➡️ To the <b>listing owner</b> (not you — the agent who holds the unit) — asking if it is still available.</div>
         <textarea id="cfAskOwner" rows="3" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
         <div id="cfLangs_askOwner"></div>
       </div>
 
       <div style="border:1px solid var(--border);border-left:3px solid #25d366;border-radius:10px;padding:12px;margin-bottom:12px;background:var(--surface2)">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 2a · Advertising agent replies AVAILABLE ✅</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 2a · Listing owner replies AVAILABLE ✅</div>
         <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">➡️ To the <b>customer</b>:</div>
         <textarea id="cfAvailCust" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
         <div id="cfLangs_availCust"></div>
@@ -556,7 +556,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
       </div>
 
       <div style="border:1px solid var(--border);border-left:3px solid #ef4444;border-radius:10px;padding:12px;margin-bottom:12px;background:var(--surface2)">
-        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 2b · Advertising agent replies NOT available ⚠️ (sold / rented / 3rd party)</div>
+        <div style="font-size:13px;font-weight:700;color:var(--text)">Step 2b · Listing owner replies NOT available ⚠️ (sold / rented / 3rd party)</div>
         <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">➡️ To the <b>customer</b>:</div>
         <textarea id="cfNotAvailCust" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
         <div id="cfLangs_notAvailCust"></div>
@@ -566,7 +566,7 @@ tr:hover td{background:rgba(255,255,255,.02)}
 
       <div style="border:1px solid var(--border);border-left:3px solid #6b7280;border-radius:10px;padding:12px;margin-bottom:12px;background:var(--surface2)">
         <div style="font-size:13px;font-weight:700;color:var(--text-muted)">Optional · When you tap 🤝 Co-broke on a listing</div>
-        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">➡️ To that listing’s <b>advertising agent</b> — asking if they are OK with the co-broke.</div>
+        <div style="font-size:11px;color:var(--text-muted);margin:3px 0 6px">➡️ To that listing’s <b>listing owner</b> — asking if they are OK with the co-broke.</div>
         <textarea id="cfRequestOwner" rows="2" style="width:100%;resize:vertical;background:var(--surface);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:13px;font-family:inherit"></textarea>
         <div id="cfLangs_requestOwner"></div>
       </div>
